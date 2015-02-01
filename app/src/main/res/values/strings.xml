@@ -15,6 +15,10 @@
   <string name="setting_software_licences">software licences</string>
   <string name="setting_checkbox">check setting</string>
 
+  <!-- sns -->
   <string name="twitter">twitter</string>
 
+  <!-- ATND -->
+  <string name="status_accepted">参加</string>
+  <string name="status_waiting">キャンセル待ち</string>
 </resources>

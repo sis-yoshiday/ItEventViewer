@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
+import org.iteventviewer.app.R;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
@@ -69,6 +70,17 @@ import rx.functions.Func2;
       builder.append(String.format("(@%s)", twitterId));
     }
     return builder.toString();
+  }
+
+  public int getStatusString() {
+    switch (status) {
+      case STATUS_ACCEPTED:
+        return R.string.status_accepted;
+      case STATUS_WAITING:
+        return R.string.status_waiting;
+      default:
+        throw new IllegalStateException("status : " + status);
+    }
   }
 
   public boolean hasTwitterId() {

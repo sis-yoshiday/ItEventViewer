@@ -276,7 +276,7 @@ public class EventDetailActivity extends ToolBarActivity {
     class MemberViewHolder extends BindableViewHolder {
 
       @InjectView(R.id.name) TextView name;
-
+      @InjectView(R.id.status) TextView status;
       @InjectView(R.id.twitter) ButtonFlat twitter;
 
       public MemberViewHolder(View itemView) {
@@ -288,8 +288,9 @@ public class EventDetailActivity extends ToolBarActivity {
 
         final User item = getItem(position).getUser();
 
-        item.getStatus();
         name.setText(item.getNameString());
+
+        status.setText(item.getStatusString());
 
         twitter.setVisibility(item.hasTwitterId() ? View.VISIBLE : View.GONE);
         ViewObservable.clicks(twitter).subscribe(new Action1<OnClickEvent>() {
