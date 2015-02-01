@@ -1,0 +1,3 @@
+/build
+signingConfigs/release.gradle
+signingConfigs/release.keystore
