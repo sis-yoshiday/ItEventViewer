@@ -45,4 +45,8 @@ import org.joda.time.LocalDateTime;
    * 更新日時（共通）
    */
   @SerializedName("updated_at") LocalDateTime updatedAt;
+
+  public boolean isLimitOver() {
+    return waiting > 0;
+  }
 }

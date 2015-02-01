@@ -83,9 +83,9 @@ public class MemberSearchQuery {
 
     @Setter private Set<String> ownerTwitterIds;
 
-    @Setter private int start;
+    private int start;
 
-    @Setter private int count;
+    private int count;
 
     private static final String FORMAT_JSON = "json";
 
@@ -135,6 +135,16 @@ public class MemberSearchQuery {
 
     public Builder addOwnerTwitterId(String twitterId) {
       ownerTwitterIds.add(twitterId);
+      return this;
+    }
+
+    public Builder setStart(int start) {
+      this.start = start;
+      return this;
+    }
+
+    public Builder setCount(int count) {
+      this.count = count;
       return this;
     }
 

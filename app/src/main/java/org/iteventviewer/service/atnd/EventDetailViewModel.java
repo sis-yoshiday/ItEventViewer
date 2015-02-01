@@ -35,7 +35,7 @@ public class EventDetailViewModel {
 
   public static EventDetailViewModel user(User user) {
 
-    EventDetailViewModel model = new EventDetailViewModel(TYPE_HEADER);
+    EventDetailViewModel model = new EventDetailViewModel(TYPE_MEMBER);
     model.setUser(user);
     return model;
   }

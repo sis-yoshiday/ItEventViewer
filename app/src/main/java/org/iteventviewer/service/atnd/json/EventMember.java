@@ -1,5 +1,6 @@
 package org.iteventviewer.service.atnd.json;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.parceler.Parcel;
@@ -13,5 +14,11 @@ public class EventMember extends EventBase {
   /**
    * 参加者（追加取得）
    */
-  User users;
+  List<UserContainer> users;
+
+  @Getter
+  public class UserContainer {
+
+    User user;
+  }
 }

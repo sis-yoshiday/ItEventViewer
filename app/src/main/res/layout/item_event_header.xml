@@ -47,21 +47,11 @@
       android:orientation="horizontal">
 
     <TextView
-        android:id="@+id/startedAt"
+        android:id="@+id/date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="2009/06/10 19:00"/>
+        tools:text="2009/06/10 19:00 〜 21:00"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=" to "/>
-
-    <TextView
-        android:id="@+id/endedAt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="2009/06/10 21:00"/>
   </LinearLayout>
 
   <LinearLayout

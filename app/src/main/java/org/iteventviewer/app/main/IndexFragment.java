@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +11,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 import java.util.Map;
 import javax.inject.Inject;
 import lombok.Setter;
@@ -36,7 +32,7 @@ import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
+import rx.subscriptions.Subscriptions;
 
 /**
  * Created by yuki_yoshida on 15/01/30.
@@ -47,7 +43,7 @@ public class IndexFragment extends BaseFragment {
 
   @Inject AtndService atndService;
 
-  private Subscription subscription;
+  private Subscription subscription = Subscriptions.empty();
 
   @InjectView(R.id.recyclerView) ExRecyclerView recyclerView;
   @InjectView(R.id.emptyLayout) ViewGroup emptyLayout;
@@ -115,8 +111,7 @@ public class IndexFragment extends BaseFragment {
   class IndexAdapter
       extends SimpleRecyclerAdapter<SearchResult.EventContainer<Event>, BindableViewHolder> {
 
-    @Setter
-    private OnItemClickListener onItemClickListener;
+    @Setter private OnItemClickListener onItemClickListener;
 
     public IndexAdapter(Context context) {
       super(context);

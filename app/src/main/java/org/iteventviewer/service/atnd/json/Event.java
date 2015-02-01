@@ -4,8 +4,11 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
 import org.joda.time.LocalDateTime;
-import org.parceler.Parcel;
+import org.joda.time.Period;
+import org.joda.time.format.DateTimeFormat;
 
 /**
  * Created by yuki_yoshida on 15/01/31.
@@ -18,7 +21,7 @@ import org.parceler.Parcel;
    * キャッチ
    */
   @SerializedName("catch") String catchText;
-  
+
   /**
    * 概要
    */
@@ -73,4 +76,27 @@ import org.parceler.Parcel;
    * 主催者のtwitter id
    */
   @SerializedName("owner_twitter_id") String ownerTwitterId;
+
+  public String getEventDateString() {
+    StringBuilder builder =
+        new StringBuilder(startedAt.toString(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm")));
+    builder.append(" 〜 ");
+    if (endedAt != null) {
+      if (startedAt.getYear() == endedAt.getYear() && startedAt.getMonthOfYear() == endedAt.getMonthOfYear() && startedAt.getDayOfMonth() == startedAt.getDayOfMonth()) {
+        builder.append(endedAt.toString(DateTimeFormat.forPattern("HH:mm")));
+      } else {
+        builder.append(endedAt.toString(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm")));
+      }
+    }
+    return builder.toString();
+  }
+
+  public boolean isEnded() {
+    LocalDateTime now = new LocalDateTime(DateTimeZone.getDefault());
+    if (endedAt != null) {
+      return now.compareTo(endedAt) > 0;
+    }
+    // NOTE : 適当だが開始日時の24時間後なら終了済みとする
+    return now.compareTo(startedAt.plus(Period.days(1))) > 0;
+  }
 }
