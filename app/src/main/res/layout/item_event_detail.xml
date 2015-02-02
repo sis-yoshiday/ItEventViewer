@@ -1,0 +1,141 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:layout_margin="@dimen/space_sm">
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Tokyo Cloud Developers Meetup #02"/>
+
+    <TextView
+        android:id="@+id/owner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/space_sm"
+        android:textSize="@dimen/abc_text_size_caption_material"
+        tools:text="by foo(@foo)"/>
+  </LinearLayout>
+
+  <TextView
+      android:id="@+id/catchText"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/space_sm"
+      tools:text="今回のテーマは Google App Engine。"/>
+
+  <TextView
+      android:id="@+id/description"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/space_sm"
+      tools:text="クラウド・コンピューティングを扱うディベロッパ・エンジニアのカジュアルなイベント Tokyo Cloud の第２回目を開催します。"/>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:layout_margin="@dimen/space_sm">
+    <com.gc.materialdesign.views.ButtonFlat
+        android:id="@+id/eventUrl"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="@string/to_event_page"/>
+
+    <com.gc.materialdesign.views.ButtonFlat
+        android:id="@+id/url"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="@string/to_ref_url"/>
+  </LinearLayout>
+
+  <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/space_sm"
+      android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="2009/06/10 19:00 〜 21:00"/>
+
+  </LinearLayout>
+
+  <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/space_sm"
+      android:orientation="horizontal">
+    <TextView
+        android:id="@+id/accepted"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="80"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="/"/>
+
+    <TextView
+        android:id="@+id/limit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="80"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="人  "/>
+
+    <TextView
+        android:id="@+id/waiting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="3人待ち"/>
+  </LinearLayout>
+
+  <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/space_sm"
+      android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="東京都中央区銀座7-2-6"/>
+
+    <TextView
+        android:id="@+id/place"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Recruit Annex 1　（リクルートアネックス1）　B1F"/>
+
+    <TextView
+        android:id="@+id/lat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="35.6708529"/>
+
+    <TextView
+        android:id="@+id/lng"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="139.7605287"/>
+  </LinearLayout>
+
+</LinearLayout>

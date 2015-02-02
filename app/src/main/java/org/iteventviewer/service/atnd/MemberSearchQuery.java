@@ -13,6 +13,8 @@ import lombok.Setter;
  */
 public class MemberSearchQuery {
 
+  public static final int MAX_COUNT = 100;
+
   /**
    * イベントID
    */

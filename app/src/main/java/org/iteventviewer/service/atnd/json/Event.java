@@ -1,5 +1,6 @@
 package org.iteventviewer.service.atnd.json;
 
+import android.text.TextUtils;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import lombok.Getter;
@@ -98,5 +99,18 @@ import org.joda.time.format.DateTimeFormat;
     }
     // NOTE : 適当だが開始日時の24時間後なら終了済みとする
     return now.compareTo(startedAt.plus(Period.days(1))) > 0;
+  }
+
+  public String getOwnerString() {
+
+    StringBuilder builder = new StringBuilder("by " + ownerNickname);
+    if (hasTwitterId()) {
+      builder.append(String.format("(@%s)", ownerTwitterId));
+    }
+    return builder.toString();
+  }
+
+  private boolean hasTwitterId() {
+    return !TextUtils.isEmpty(ownerTwitterId);
   }
 }

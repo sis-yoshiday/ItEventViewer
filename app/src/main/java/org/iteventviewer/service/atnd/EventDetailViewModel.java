@@ -12,31 +12,40 @@ public class EventDetailViewModel {
 
   public static final int TYPE_HEADER = 0;
 
-  public static final int TYPE_MEMBER = 1;
+  public static final int TYPE_DETAIL = 1;
 
-  public static final int TYPE_MEMBER_EMPTY = 2;
+  public static final int TYPE_MEMBER = 2;
 
   @Getter private int type;
 
-  @Getter @Setter private Event event;
+  @Getter private String title;
 
-  @Getter @Setter private User user;
+  @Getter private Event event;
+
+  @Getter private User user;
 
   private EventDetailViewModel(int type) {
     this.type = type;
   }
 
-  public static EventDetailViewModel header(Event event) {
+  public static EventDetailViewModel header(String title) {
 
     EventDetailViewModel model = new EventDetailViewModel(TYPE_HEADER);
-    model.setEvent(event);
+    model.title = title;
+    return model;
+  }
+
+  public static EventDetailViewModel detail(Event event) {
+
+    EventDetailViewModel model = new EventDetailViewModel(TYPE_DETAIL);
+    model.event = event;
     return model;
   }
 
   public static EventDetailViewModel user(User user) {
 
     EventDetailViewModel model = new EventDetailViewModel(TYPE_MEMBER);
-    model.setUser(user);
+    model.user = user;
     return model;
   }
 }

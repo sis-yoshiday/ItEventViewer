@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
+import org.iteventviewer.service.atnd.EventSearchQuery;
 import org.joda.time.LocalDateTime;
 
 /**
@@ -48,5 +49,21 @@ import org.joda.time.LocalDateTime;
 
   public boolean isLimitOver() {
     return waiting > 0;
+  }
+
+  public final int getMemberFetchCount() {
+
+    if (limit > EventSearchQuery.MAX_COUNT) {
+      // 定員が検索可能件数オーバー
+      return EventSearchQuery.MAX_COUNT;
+    } else if (accepted > EventSearchQuery.MAX_COUNT) {
+      // 参加者が検索可能件数オーバー
+      return EventSearchQuery.MAX_COUNT;
+    } else if (accepted + waiting > EventSearchQuery.MAX_COUNT) {
+      // 参加者とキャンセル待ちの合計が検索可能件数オーバー
+      return EventSearchQuery.MAX_COUNT;
+    } else {
+      return accepted + waiting;
+    }
   }
 }

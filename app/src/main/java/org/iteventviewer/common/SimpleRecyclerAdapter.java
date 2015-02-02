@@ -65,7 +65,8 @@ public abstract class SimpleRecyclerAdapter<T, VH extends RecyclerView.ViewHolde
   }
 
   public void addItem(T item) {
-    addItem(item, items.isEmpty() ? 0 : items.size() - 1);
+    items.add(item);
+    notifyItemInserted(items.size() - 1);
   }
 
   public void addItem(T item, int insertPosition) {

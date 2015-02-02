@@ -78,4 +78,11 @@ public class EventSearchQuery extends MemberSearchQuery {
       return super.build();
     }
   }
+
+  public static Map<String, String> next(Map<String, String> query) {
+
+    query.put(START, String.valueOf(Integer.valueOf(query.get(START)) + MAX_COUNT));
+    query.put(COUNT, String.valueOf(MAX_COUNT));
+    return query;
+  }
 }

@@ -8,6 +8,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +28,7 @@ import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.service.atnd.AtndService;
 import org.iteventviewer.service.atnd.EventDetailViewModel;
+import org.iteventviewer.service.atnd.EventSearchQuery;
 import org.iteventviewer.service.atnd.MemberSearchQuery;
 import org.iteventviewer.service.atnd.json.Event;
 import org.iteventviewer.service.atnd.json.EventMember;
@@ -41,9 +43,14 @@ import rx.android.observables.ViewObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.functions.Func2;
 import rx.subscriptions.Subscriptions;
 
+/**
+ * TODO デザイン
+ * TODO HTMLスニペットをどう表示させるか
+ * TODO twitterへのリンク
+ * TODO 100名以上参加者がいる場合のページネーション
+ */
 public class EventDetailActivity extends ToolBarActivity {
 
   public static final String EXTRA_EVENT = "event";
@@ -55,6 +62,8 @@ public class EventDetailActivity extends ToolBarActivity {
   @InjectView(R.id.recyclerView) RecyclerView recyclerView;
 
   EventDetailAdapter adapter;
+
+  private Observable<SearchResult<EventMember>> currentResultObservable;
 
   private Subscription subscription = Subscriptions.empty();
 
@@ -89,22 +98,30 @@ public class EventDetailActivity extends ToolBarActivity {
     recyclerView.setLayoutManager(layoutManager);
 
     adapter = new EventDetailAdapter(this);
-    adapter.addItem(EventDetailViewModel.header(event));
+    adapter.addItem(EventDetailViewModel.header(getString(R.string.event_detail)));
+    adapter.addItem(EventDetailViewModel.detail(event));
+    adapter.addItem(EventDetailViewModel.header(getString(R.string.event_user)));
     recyclerView.setAdapter(adapter);
 
     // 取得する件数
-    int total = event.getLimit() + event.getWaiting();
-    if (total > 100) {
-      total = 100;
-    }
+    final int searchCount = event.getMemberFetchCount();
 
-    Map<String, String> query =
-        new MemberSearchQuery.Builder().addEventId(event.getEventId()).setCount(total).build();
+    final Map<String, String> query =
+        new MemberSearchQuery.Builder().addEventId(event.getEventId()).setCount(searchCount).build();
 
-    subscription = AndroidObservable.bindActivity(this, atndService.searchEventMember(query))
+    currentResultObservable = atndService.searchEventMember(query);
+
+    subscription = AndroidObservable.bindActivity(this, currentResultObservable)
         .subscribeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action1<SearchResult<EventMember>>() {
           @Override public void call(SearchResult<EventMember> result) {
+
+            if (EventSearchQuery.MAX_COUNT == result.getResultsReturned()) {
+              // TODO 追加取得しないといけない
+              currentResultObservable = atndService.searchEventMember(EventSearchQuery.next(query));
+            } else {
+              currentResultObservable = null;
+            }
 
             Observable<User> userObservable =
                 Observable.from(result.getEvents().get(0).getEvent().getUsers())
@@ -186,10 +203,10 @@ public class EventDetailActivity extends ToolBarActivity {
       switch (viewType) {
         case EventDetailViewModel.TYPE_HEADER:
           return inflater.inflate(R.layout.item_event_header, viewGroup, false);
+        case EventDetailViewModel.TYPE_DETAIL:
+          return inflater.inflate(R.layout.item_event_detail, viewGroup, false);
         case EventDetailViewModel.TYPE_MEMBER:
           return inflater.inflate(R.layout.item_event_member, viewGroup, false);
-        case EventDetailViewModel.TYPE_MEMBER_EMPTY:
-          return inflater.inflate(R.layout.item_event_member_empty, viewGroup, false);
         default:
           throw new IllegalArgumentException("viewType");
       }
@@ -199,10 +216,10 @@ public class EventDetailActivity extends ToolBarActivity {
       switch (viewType) {
         case EventDetailViewModel.TYPE_HEADER:
           return new HeaderViewHolder(view);
+        case EventDetailViewModel.TYPE_DETAIL:
+          return new DetailViewHolder(view);
         case EventDetailViewModel.TYPE_MEMBER:
           return new MemberViewHolder(view);
-        case EventDetailViewModel.TYPE_MEMBER_EMPTY:
-          return new MemberEmptyViewHolder(view);
         default:
           throw new IllegalArgumentException("viewType");
       }
@@ -215,10 +232,27 @@ public class EventDetailActivity extends ToolBarActivity {
     class HeaderViewHolder extends BindableViewHolder {
 
       @InjectView(R.id.title) TextView title;
+
+      public HeaderViewHolder(View itemView) {
+        super(itemView);
+        ButterKnife.inject(this, itemView);
+      }
+
+      @Override public void bind(int position) {
+
+        title.setText(getItem(position).getTitle());
+      }
+    }
+
+    class DetailViewHolder extends BindableViewHolder {
+
+      @InjectView(R.id.title) TextView title;
+      @InjectView(R.id.owner) TextView owner;
+
       @InjectView(R.id.catchText) TextView catchText;
       @InjectView(R.id.description) TextView description;
-      @InjectView(R.id.eventUrl) TextView eventUrl;
-      @InjectView(R.id.url) TextView url;
+      @InjectView(R.id.eventUrl) ButtonFlat eventUrlButton;
+      @InjectView(R.id.url) ButtonFlat urlButton;
 
       @InjectView(R.id.date) TextView date;
 
@@ -229,10 +263,7 @@ public class EventDetailActivity extends ToolBarActivity {
       @InjectView(R.id.address) TextView address;
       @InjectView(R.id.place) TextView place;
 
-      @InjectView(R.id.ownerNickname) TextView ownerNickname;
-      @InjectView(R.id.ownerTwitterId) TextView ownerTwitterId;
-
-      public HeaderViewHolder(View itemView) {
+      public DetailViewHolder(View itemView) {
         super(itemView);
         ButterKnife.inject(this, itemView);
       }
@@ -243,10 +274,27 @@ public class EventDetailActivity extends ToolBarActivity {
 
         // what
         title.setText(item.getTitle());
+        owner.setText(item.getOwnerString());
         catchText.setText(item.getCatchText());
         description.setText(Html.fromHtml(item.getDescription()));
-        eventUrl.setText(item.getEventUrl());
-        url.setText(item.getUrl());
+
+        final String eventUrl = item.getEventUrl();
+        eventUrlButton.setVisibility(TextUtils.isEmpty(eventUrl) ? View.GONE : View.VISIBLE);
+        eventUrlButton.setOnClickListener(new View.OnClickListener() {
+          @Override public void onClick(View v) {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse(eventUrl)));
+          }
+        });
+
+        final String url = item.getUrl();
+        urlButton.setVisibility(TextUtils.isEmpty(url) ? View.GONE : View.VISIBLE);
+        urlButton.setOnClickListener(new View.OnClickListener() {
+          @Override public void onClick(View v) {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse(url)));
+          }
+        });
 
         // when
         date.setText(item.getEventDateString());
@@ -266,10 +314,6 @@ public class EventDetailActivity extends ToolBarActivity {
         place.setText(item.getPlace());
         item.getLat();
         item.getLng();
-
-        // who
-        ownerNickname.setText(item.getOwnerNickname());
-        ownerTwitterId.setText(item.getOwnerTwitterId());
       }
     }
 
@@ -300,18 +344,6 @@ public class EventDetailActivity extends ToolBarActivity {
                 Uri.parse(SnsUtil.twitterUrlById(item.getTwitterId()))));
           }
         });
-      }
-    }
-
-    class MemberEmptyViewHolder extends BindableViewHolder {
-
-      public MemberEmptyViewHolder(View itemView) {
-        super(itemView);
-        ButterKnife.inject(this, itemView);
-      }
-
-      @Override public void bind(int position) {
-
       }
     }
   }

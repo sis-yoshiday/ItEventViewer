@@ -6,6 +6,6 @@ package org.iteventviewer.app.util;
 public class SnsUtil {
 
   public static String twitterUrlById(String twitterId) {
-    return "https://twitter.com/intent/user?user_id=" + twitterId;
+    return "https://twitter.com/" + twitterId;
   }
 }

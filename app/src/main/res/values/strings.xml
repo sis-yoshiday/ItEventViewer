@@ -8,7 +8,20 @@
   <string name="navigation_drawer_close">Close navigation drawer</string>
 
   <string name="menu_index">インデックス</string>
-  <string name="menu_setting">設定</string>
+  <string name="menu_personal_settings">個人設定</string>
+  <string name="menu_settings">設定</string>
+
+  <!-- event detail -->
+  <string name="event_detail">イベント詳細</string>
+  <string name="event_user">参加者一覧</string>
+  <string name="to_event_page">イベントサイトへ</string>
+  <string name="to_ref_url">参考URL</string>
+
+  <!-- personal settings -->
+  <string name="msg_select_region">地域を選択する</string>
+  <string name="msg_select_category">カテゴリを選択する</string>
+  <string name="not_selected">未選択</string>
+  <string name="not_set">指定なし</string>
 
   <!-- settings -->
   <string name="setting_privacy_policy">privacy policy</string>
@@ -21,4 +34,8 @@
   <!-- ATND -->
   <string name="status_accepted">参加</string>
   <string name="status_waiting">キャンセル待ち</string>
+
+  <!-- Qiitta -->
+  <string name="qiita_token">170b632121d22fbe1a116faca7ea621ae34e2bac</string>
+  
 </resources>
