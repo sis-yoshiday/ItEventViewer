@@ -58,10 +58,10 @@
     public static <fields>;
 }
 
-# The support library contains references to newer platform versions.
+# The rx.android.support library contains references to newer platform versions.
 # Don't warn about those in case this app is linking against an older
 # platform version.  We know about them, and they are safe.
--dontwarn android.support.**
+-dontwarn android.rx.android.support.**
 
 
 # Butter Knife
@@ -121,6 +121,9 @@
 
 # sugar Model
 -keep class com.orm.** { *; }
+
+# CompoundLayouts
+-dontwarn jp.yokomark.widget.compound.CompoundGridLayout
 
 # Other
 -dontwarn java.beans.**

@@ -16,36 +16,39 @@
 
 package org.iteventviewer.app;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import butterknife.ButterKnife;
-import butterknife.InjectView;
-import lombok.Getter;
+import android.support.v4.app.NavUtils;
+import android.view.MenuItem;
+import rx.android.app.support.RxActionBarActivity;
 
 /**
- * Created by yuki_yoshida on 15/01/24.
+ * Created by yuki_yoshida on 15/02/04.
  */
-public abstract class ToolBarActivity extends BaseActivity {
+public abstract class BaseActivity extends RxActionBarActivity {
 
-  @Getter @InjectView(R.id.toolbar) Toolbar toolbar;
+  protected abstract int contentView();
 
-  protected String title() {
-    return "";
+  protected Intent upIntent() {
+    return NavUtils.getParentActivityIntent(this);
   }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    ButterKnife.inject(this);
+    setContentView(contentView());
+  }
 
-    setSupportActionBar(toolbar);
-    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+  @Override public boolean onOptionsItemSelected(MenuItem item) {
 
-    toolbar.setTitle(title());
-
-    if (upIntent() != null) {
-      toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
-    } else {
-      toolbar.setNavigationIcon(R.drawable.abc_ic_clear_mtrl_alpha);
+    switch (item.getItemId()) {
+      case android.R.id.home:
+        Intent intent = upIntent();
+        if (intent != null) {
+          NavUtils.navigateUpTo(this, intent);
+          return true;
+        }
+        break;
     }
+    return super.onOptionsItemSelected(item);
   }
 }

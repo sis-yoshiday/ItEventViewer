@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
-package org.iteventviewer.app;
+package org.iteventviewer.app.drawer;
 
-import android.support.v7.widget.Toolbar;
-import rx.android.app.support.RxFragment;
+import android.support.annotation.Nullable;
+import android.view.View;
+import lombok.Getter;
 
 /**
- * Created by yuki_yoshida on 15/01/29.
+ * Created by yuki_yoshida on 15/02/07.
  */
-public class BaseFragment extends RxFragment {
+@Getter
+public class SelectMenuEvent {
 
-  public Toolbar getToolbar() {
-    return ((ToolBarActivity) getActivity()).getToolbar();
+  private View view;
+
+  private int position;
+
+  private boolean alreadySelected;
+
+  public SelectMenuEvent(@Nullable View view, int position, boolean alreadySelected) {
+    this.view = view;
+    this.position = position;
+    this.alreadySelected = alreadySelected;
   }
 }

@@ -3,30 +3,22 @@ package org.iteventviewer.app;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
-import android.view.MenuItem;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import org.iteventviewer.app.util.MenuUtils;
-import org.iteventviewer.app.drawer.NavigationDrawerCallbacks;
 import org.iteventviewer.app.drawer.NavigationDrawerFragment;
+import org.iteventviewer.app.drawer.SelectMenuEvent;
+import org.iteventviewer.app.util.MenuUtils;
 import org.iteventviewer.model.DrawerMenu;
+import rx.functions.Action1;
+import rx.subscriptions.CompositeSubscription;
 
-public class MainActivity extends ToolBarActivity implements NavigationDrawerCallbacks {
+public class MainActivity extends ToolBarActivity {
 
   @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
 
   private NavigationDrawerFragment drawerFragment;
 
-  /* drawer callbacks */
-
-  @Override public void onItemSelected(int position) {
-
-    DrawerMenu drawerMenu = drawerFragment.getDrawerMenu(position);
-    Fragment fragment = MenuUtils.createDrawerMenuFragment(drawerMenu);
-    getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
-
-    toolbar.setTitle(drawerMenu.getTitleResId());
-  }
+  private CompositeSubscription subscription = new CompositeSubscription();
 
   /* activity lifecycle */
 
@@ -46,6 +38,24 @@ public class MainActivity extends ToolBarActivity implements NavigationDrawerCal
         R.id.navigation_drawer);
 
     drawerFragment.setUp(R.id.navigation_drawer, drawerLayout);
+
+    subscription.add(drawerFragment.observable().subscribe(new Action1<SelectMenuEvent>() {
+      @Override public void call(SelectMenuEvent selectMenuEvent) {
+
+        int position = selectMenuEvent.getPosition();
+
+        DrawerMenu drawerMenu = drawerFragment.getDrawerMenu(position);
+        Fragment fragment = MenuUtils.createDrawerMenuFragment(drawerMenu);
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+
+        setTitle(drawerMenu.getTitleResId());
+      }
+    }));
+  }
+
+  @Override protected void onDestroy() {
+    subscription.clear();
+    super.onDestroy();
   }
 
   @Override public void onBackPressed() {
@@ -55,15 +65,5 @@ public class MainActivity extends ToolBarActivity implements NavigationDrawerCal
     } else {
       super.onBackPressed();
     }
-  }
-
-  @Override public boolean onOptionsItemSelected(MenuItem item) {
-
-    switch (item.getItemId()) {
-      case android.R.id.home:
-        drawerFragment.toggle();
-        return true;
-    }
-    return super.onOptionsItemSelected(item);
   }
 }

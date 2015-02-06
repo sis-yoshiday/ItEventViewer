@@ -37,10 +37,10 @@ import org.iteventviewer.service.atnd.json.User;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
-import rx.android.events.OnClickEvent;
-import rx.android.observables.AndroidObservable;
-import rx.android.observables.ViewObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.android.view.OnClickEvent;
+import rx.android.view.ViewObservable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
@@ -111,7 +111,7 @@ public class EventDetailActivity extends ToolBarActivity {
 
     currentResultObservable = atndService.searchEventMember(query);
 
-    subscription = AndroidObservable.bindActivity(this, currentResultObservable)
+    subscription = AppObservable.bindActivity(this, currentResultObservable)
         .subscribeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action1<SearchResult<EventMember>>() {
           @Override public void call(SearchResult<EventMember> result) {

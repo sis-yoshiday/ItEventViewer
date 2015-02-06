@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.iteventviewer.app.R;
 import org.iteventviewer.app.main.IndexFragment;
-import org.iteventviewer.app.main.PersonalSettingsFragment;
+import org.iteventviewer.app.main.RegionSettingsFragment;
 import org.iteventviewer.app.main.SettingsFragment;
 import org.iteventviewer.model.DrawerMenu;
 
@@ -31,7 +31,7 @@ public class MenuUtils {
       case R.string.menu_index:
         return IndexFragment.newInstance();
       case R.string.menu_personal_settings:
-        return PersonalSettingsFragment.newInstance();
+        return RegionSettingsFragment.newInstance();
       case R.string.menu_settings:
         return SettingsFragment.newInstance();
       default:

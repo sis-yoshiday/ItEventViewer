@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 import org.iteventviewer.app.BuildConfig;
 import org.iteventviewer.app.EventDetailActivity;
 import org.iteventviewer.app.main.IndexFragment;
+import org.iteventviewer.app.main.RegionSettingsFragment;
 import org.iteventviewer.common.AndroidBus;
 import org.iteventviewer.common.LocalDateTimeConverter;
 import org.iteventviewer.service.atnd.AtndService;
@@ -20,8 +21,9 @@ import retrofit.converter.GsonConverter;
 /**
  * Created by yuki_yoshida on 15/01/31.
  */
-@Module(injects = { IndexFragment.class, EventDetailActivity.class }, library = true)
-public class ApplicationModule {
+@Module(injects = {
+    IndexFragment.class, RegionSettingsFragment.class, EventDetailActivity.class
+}, library = true) public class ApplicationModule {
 
   @Provides @Singleton public AtndService getAtndService() {
 

@@ -26,7 +26,7 @@ die ( ) {
     exit 1
 }
 
-# OS specific support (must be 'true' or 'false').
+# OS specific rx.android.support (must be 'true' or 'false').
 cygwin=false
 msys=false
 darwin=false

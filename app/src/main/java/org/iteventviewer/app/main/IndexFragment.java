@@ -28,7 +28,7 @@ import org.iteventviewer.service.atnd.EventSearchQuery;
 import org.iteventviewer.service.atnd.json.Event;
 import org.iteventviewer.service.atnd.json.SearchResult;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -81,7 +81,7 @@ public class IndexFragment extends BaseFragment {
     // TODO 最終的には設定されたタグのOR条件が与えられる（＋開催期間も）
     Map<String, String> query = new EventSearchQuery.Builder().addKeyword("Android").build();
 
-    subscription = AndroidObservable.bindFragment(this, atndService.searchEvent(query))
+    subscription = AppObservable.bindFragment(this, atndService.searchEvent(query))
         .subscribeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action1<SearchResult<Event>>() {
           @Override public void call(SearchResult<Event> eventSearchResult) {

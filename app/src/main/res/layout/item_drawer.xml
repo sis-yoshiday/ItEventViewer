@@ -1,12 +1,28 @@
-<FrameLayout
+<!--
+  ~ Copyright 2015. Yuki YOSHIDA
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<jp.yokomark.widget.compound.CompoundFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="@dimen/unit"
     android:paddingLeft="@dimen/space_lg"
     android:paddingRight="@dimen/space_lg"
-    android:foreground="@drawable/common_selector_dark"
-    android:background="@color/drawerBackground"
+    android:background="@drawable/drawer_selector"
     android:clickable="true">
 
   <LinearLayout
@@ -18,14 +34,14 @@
         android:id="@+id/icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:src="@drawable/ic_face_black_24dp"/>
+        tools:src="@drawable/ic_launcher"/>
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/space_lg"
-        android:textColor="@color/colorTextPrimaryLight"
-        tools:text="@string/menu_index"/>
+        android:textColor="@color/colorTextPrimary"
+        tools:text="@string/menu_1"/>
   </LinearLayout>
-</FrameLayout>
+</jp.yokomark.widget.compound.CompoundFrameLayout>
