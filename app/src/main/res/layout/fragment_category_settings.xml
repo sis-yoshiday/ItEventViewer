@@ -3,18 +3,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="?attr/actionBarSize">
-
+    android:layout_height="match_parent">
   <android.support.v7.widget.RecyclerView
       android:id="@+id/recyclerView"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:clipToPadding="false"
-      tools:visibility="gone"/>
+      android:orientation="vertical"
+      android:paddingTop="?attr/actionBarSize"
+      android:clipToPadding="false"/>
 
   <LinearLayout
-      android:id="@+id/warningLayout"
+      android:id="@+id/errorLayout"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:orientation="vertical"
@@ -22,40 +21,27 @@
       android:visibility="gone"
       tools:visibility="visible">
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:src="@drawable/ic_action_info"/>
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/msg_no_setting"
+        android:layout_margin="@dimen/space_sm"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_vertical"
+        android:drawableLeft="@drawable/ic_action_error"
+        android:textSize="@dimen/abc_text_size_medium_material"
+        android:text="@string/msg_error_tag_list"
         android:textColor="@color/colorTextPrimary"/>
-  </LinearLayout>
 
-  <LinearLayout
-      android:id="@+id/emptyLayout"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:orientation="vertical"
-      android:layout_gravity="center"
-      android:visibility="gone"
-      tools:visibility="visible"
-      tools:layout_gravity="center_horizontal|bottom">
-
-    <ImageView
+    <Button
+        android:id="@+id/retry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:src="@drawable/ic_action_error"/>
+        android:layout_margin="@dimen/space_sm"
+        android:textColor="@color/info"
+        android:background="@drawable/default_selector"
+        android:text="@string/retry"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/msg_no_result"
-        android:textColor="@color/colorTextPrimary"/>
   </LinearLayout>
 
   <include

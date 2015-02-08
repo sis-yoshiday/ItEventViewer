@@ -1,0 +1,4 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+  <size android:height="@dimen/border_xs"/>
+  <solid android:color="@color/colorDivider"/>
+</shape>

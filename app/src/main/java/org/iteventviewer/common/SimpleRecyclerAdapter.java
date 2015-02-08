@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Setter;
+import rx.Observable;
+import rx.functions.Func1;
 
 /**
  * Created by yuki_yoshida on 15/01/20.
@@ -100,5 +102,9 @@ public abstract class SimpleRecyclerAdapter<T, VH extends RecyclerView.ViewHolde
 
     items.set(position, item);
     notifyItemChanged(position);
+  }
+
+  public Observable<T> items() {
+    return Observable.from(items);
   }
 }

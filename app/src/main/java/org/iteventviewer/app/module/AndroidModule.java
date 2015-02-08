@@ -6,6 +6,7 @@ import dagger.Module;
 import dagger.Provides;
 import javax.inject.Singleton;
 import org.iteventviewer.app.MyApplication;
+import org.iteventviewer.service.ServiceModule;
 
 /**
  * Created by yuki_yoshida on 15/02/01.

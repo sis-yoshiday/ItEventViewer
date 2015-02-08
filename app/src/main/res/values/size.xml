@@ -1,0 +1,5 @@
+<resources>
+
+  <integer name="category_grid_column">2</integer>
+
+</resources>

@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,16 +14,20 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import com.gc.materialdesign.views.CheckBox;
 import com.google.common.collect.Lists;
+import jp.yokomark.widget.compound.CompoundFrameLayout;
+import jp.yokomark.widget.compound.CompoundViewGroup;
+import jp.yokomark.widget.compound.OnCheckedChangeListener;
 import org.iteventviewer.app.BaseFragment;
 import org.iteventviewer.app.R;
+import org.iteventviewer.app.util.PreferenceUtil;
 import org.iteventviewer.app.util.Region;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
+import rx.Observable;
+import rx.subjects.BehaviorSubject;
 
 /**
- * 興味のある分野の登録
  * 地域の登録
  *
  * Created by yuki_yoshida on 15/02/02.
@@ -64,13 +68,8 @@ public class RegionSettingsFragment extends BaseFragment {
 
   class RegionAdapter extends SimpleRecyclerAdapter<Region, BindableViewHolder> {
 
-    private static final String KEY_SELECTED_REGION = "selected_region";
-
-    private SharedPreferences sharedPreferences;
-
     public RegionAdapter(Context context) {
       super(context);
-      sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     @Override protected View newView(ViewGroup viewGroup, int viewType) {
@@ -85,12 +84,11 @@ public class RegionSettingsFragment extends BaseFragment {
       holder.bind(position);
     }
 
-    class ViewHolder extends BindableViewHolder {
+    class ViewHolder extends BindableViewHolder implements OnCheckedChangeListener {
 
-      @InjectView(R.id.container) CardView cardView;
+      @InjectView(R.id.container) CompoundFrameLayout container;
       @InjectView(R.id.region) TextView region;
       @InjectView(R.id.regionDetail) TextView regionDetail;
-      @InjectView(R.id.checkbox) CheckBox checkBox;
 
       public ViewHolder(View itemView) {
         super(itemView);
@@ -104,19 +102,42 @@ public class RegionSettingsFragment extends BaseFragment {
         region.setText(item.getName());
         regionDetail.setText(item.toString(", "));
 
-        if (sharedPreferences.getInt(KEY_SELECTED_REGION, 0) > 0) {
-          checkBox.setChecked(true);
+        container.setOnCheckedChangeListener(null);
+        if (PreferenceUtil.getRegion(getActivity()) == item.getId()) {
+          container.setChecked(true);
         } else {
-          checkBox.setChecked(false);
+          container.setChecked(false);
         }
+        container.setOnCheckedChangeListener(this);
+      }
 
-        checkBox.setOncheckListener(new CheckBox.OnCheckListener() {
-          @Override public void onCheck(boolean b) {
-            sharedPreferences.edit().putInt(KEY_SELECTED_REGION, item.getId()).apply();
-            notifyDataSetChanged();
+      @Override public void onCheckedChanged(CompoundViewGroup view, boolean checked) {
+        int oldId = PreferenceUtil.getRegion(getActivity());
+        final int oldPosition = indexOf(oldId);
+        if (checked) {
+          PreferenceUtil.saveRegion(getActivity(), getItem(getPosition()).getId());
+        } else {
+          PreferenceUtil.saveRegion(getActivity(), 0);
+        }
+        new Handler().post(new Runnable() {
+          @Override public void run() {
+            if (oldPosition > -1) {
+              notifyItemChanged(oldPosition);
+            }
+            notifyItemChanged(getPosition());
           }
         });
       }
+    }
+
+    public int indexOf(int regionId) {
+
+      for (Region item : items) {
+        if (regionId == item.getId()) {
+          return items.indexOf(item);
+        }
+      }
+      return -1;
     }
   }
 }

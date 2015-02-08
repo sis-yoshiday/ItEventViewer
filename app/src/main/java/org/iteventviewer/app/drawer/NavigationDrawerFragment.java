@@ -80,7 +80,7 @@ public class NavigationDrawerFragment extends Fragment {
   }
 
   public Observable<SelectMenuEvent> observable() {
-    return subject.asObservable().mergeWith(adapter.observable());
+    return subject.asObservable();
   }
 
 /* fragment lifecycle */
@@ -94,7 +94,8 @@ public class NavigationDrawerFragment extends Fragment {
     super.onCreate(savedInstanceState);
     Icepick.restoreInstanceState(this, savedInstanceState);
 
-    Boolean.valueOf(readSharedSetting(getActivity(), PREF_USER_LEARNED_DRAWER, "false"));
+    userLearnedDrawer =
+        Boolean.valueOf(readSharedSetting(getActivity(), PREF_USER_LEARNED_DRAWER, "false"));
     if (savedInstanceState != null) {
       fromSavedInstanceState = true;
     }
@@ -114,7 +115,7 @@ public class NavigationDrawerFragment extends Fragment {
     adapter = new NavigationDrawerAdapter(getActivity(), MenuUtils.createDrawerMenu());
     recyclerView.setAdapter(adapter);
 
-    subscription = AppObservable.bindFragment(this, adapter.observable())
+    subscription = AppObservable.bindFragment(this, observable())
         .subscribe(new Action1<SelectMenuEvent>() {
           @Override public void call(SelectMenuEvent selectMenuEvent) {
             closeDrawer();
@@ -217,14 +218,8 @@ public class NavigationDrawerFragment extends Fragment {
   class NavigationDrawerAdapter
       extends SimpleRecyclerAdapter<DrawerMenu, NavigationDrawerAdapter.ViewHolder> {
 
-    private final BehaviorSubject<SelectMenuEvent> subject = BehaviorSubject.create();
-
     public NavigationDrawerAdapter(Context context, List<DrawerMenu> items) {
       super(context, items);
-    }
-
-    public Observable<SelectMenuEvent> observable() {
-      return subject.asObservable();
     }
 
     @Override protected View newView(ViewGroup viewGroup, int viewType) {

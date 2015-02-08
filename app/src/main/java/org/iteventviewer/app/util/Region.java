@@ -1,5 +1,6 @@
 package org.iteventviewer.app.util;
 
+import android.support.annotation.Nullable;
 import com.google.common.base.Joiner;
 import lombok.Getter;
 
@@ -21,7 +22,7 @@ public enum Region {
 
   @Getter private int id;
   @Getter private String name;
-  private String[] prefs;
+  @Getter private String[] prefs;
 
   Region(int id, String name, String[] prefs) {
     this.id = id;
@@ -29,15 +30,11 @@ public enum Region {
     this.prefs = prefs;
   }
 
-  public String toQuery() {
-    return Joiner.on(" ").join(prefs);
-  }
-
   public String toString(String separator) {
     return Joiner.on(separator).join(prefs);
   }
 
-  public Region byId(int id) {
+  public static @Nullable Region byId(int id) {
     for (Region region : values()) {
       if (id == region.id) {
         return region;

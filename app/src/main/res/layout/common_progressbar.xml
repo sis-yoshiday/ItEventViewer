@@ -15,23 +15,9 @@
   ~ limitations under the License.
   -->
 
-<resources>
-
-  <!-- 500 -->
-  <color name="colorPrimary">#8BC34A</color>
-  <!-- 700 -->
-  <color name="colorPrimaryDark">#689F38</color>
-  <!-- 100 -->
-  <color name="colorPrimaryLight">#DCEDC8</color>
-  <!-- 500 -->
-  <color name="colorAccent">#FF9800</color>
-
-  <color name="windowBackground">@color/background_material_light</color>
-  <color name="drawerBackground">@color/background_material_light</color>
-
-  <color name="colorTextPrimary">#212121</color>
-  <color name="colorTextSecondary">#727272</color>
-
-  <color name="colorDivider">#B6B6B6</color>
-
-</resources>
+<com.gc.materialdesign.views.ProgressBarCircularIndeterminate
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/unit"
+    android:layout_height="@dimen/unit"
+    android:background="@color/colorAccent"
+    android:visibility="gone"/>

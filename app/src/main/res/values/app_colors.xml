@@ -17,21 +17,15 @@
 
 <resources>
 
-  <!-- 500 -->
-  <color name="colorPrimary">#8BC34A</color>
-  <!-- 700 -->
-  <color name="colorPrimaryDark">#689F38</color>
-  <!-- 100 -->
-  <color name="colorPrimaryLight">#DCEDC8</color>
-  <!-- 500 -->
-  <color name="colorAccent">#FF9800</color>
+  <!-- Service -->
+  <color name="twitter">#00aced</color>
 
-  <color name="windowBackground">@color/background_material_light</color>
-  <color name="drawerBackground">@color/background_material_light</color>
-
-  <color name="colorTextPrimary">#212121</color>
-  <color name="colorTextSecondary">#727272</color>
-
-  <color name="colorDivider">#B6B6B6</color>
-
+  <!-- red600 -->
+  <color name="error">#E53935</color>
+  <!-- orange600 -->
+  <color name="warning">#FB8C00</color>
+  <!-- green600 -->
+  <color name="success">#43A047</color>
+  <!-- blue600 -->
+  <color name="info">#1E88E5</color>
 </resources>

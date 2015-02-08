@@ -22,7 +22,7 @@
     android:layout_height="@dimen/unit"
     android:paddingLeft="@dimen/space_lg"
     android:paddingRight="@dimen/space_lg"
-    android:background="@drawable/drawer_selector"
+    android:background="@drawable/default_selector"
     android:clickable="true">
 
   <LinearLayout

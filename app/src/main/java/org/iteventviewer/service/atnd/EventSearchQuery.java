@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.Setter;
+import org.joda.time.DurationFieldType;
+import org.joda.time.LocalDateTime;
 
 /**
  * Created by yuki_yoshida on 15/01/31.
@@ -65,6 +67,15 @@ public class EventSearchQuery extends MemberSearchQuery {
 
     public Builder addYmd(int year, int month, int day) {
       ymds.add(Integer.valueOf(String.format("%04d%02d%02d", year, month, day)));
+      return this;
+    }
+
+    public Builder addYmds(int days) {
+      LocalDateTime date = new LocalDateTime();
+      for (int i = 0; i < days; i++) {
+        addYmd(date.getYear(), date.getMonthOfYear(), date.getDayOfMonth());
+        date = date.withFieldAdded(DurationFieldType.days(), 1);
+      }
       return this;
     }
 

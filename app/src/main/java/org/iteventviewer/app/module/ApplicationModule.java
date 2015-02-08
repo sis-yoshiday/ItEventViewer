@@ -1,57 +1,59 @@
 package org.iteventviewer.app.module;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import android.net.Uri;
+import com.squareup.okhttp.Cache;
+import com.squareup.okhttp.OkHttpClient;
 import com.squareup.otto.ThreadEnforcer;
+import com.squareup.picasso.OkHttpDownloader;
+import com.squareup.picasso.Picasso;
 import dagger.Module;
 import dagger.Provides;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
 import org.iteventviewer.app.BuildConfig;
-import org.iteventviewer.app.EventDetailActivity;
-import org.iteventviewer.app.main.IndexFragment;
-import org.iteventviewer.app.main.RegionSettingsFragment;
+import org.iteventviewer.app.MyApplication;
+import org.iteventviewer.app.main.CategorySettingsFragment;
 import org.iteventviewer.common.AndroidBus;
-import org.iteventviewer.common.LocalDateTimeConverter;
-import org.iteventviewer.service.atnd.AtndService;
-import org.iteventviewer.service.qiita.QiitaService;
-import retrofit.RestAdapter;
-import retrofit.client.OkClient;
-import retrofit.converter.GsonConverter;
+import timber.log.Timber;
 
 /**
  * Created by yuki_yoshida on 15/01/31.
  */
-@Module(injects = {
-    IndexFragment.class, RegionSettingsFragment.class, EventDetailActivity.class
-}, library = true) public class ApplicationModule {
+@Module(
+    injects = { CategorySettingsFragment.CategoryAdapter.class },
+    library = true) public class ApplicationModule {
 
-  @Provides @Singleton public AtndService getAtndService() {
+  private final MyApplication app;
 
-    LocalDateTimeConverter localDateTimeConverter =
-        new LocalDateTimeConverter("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-
-    Gson gson =
-        new GsonBuilder().registerTypeAdapter(LocalDateTimeConverter.TYPE, localDateTimeConverter)
-            .create();
-
-    return new RestAdapter.Builder().setEndpoint(AtndService.ENDPOINT)
-        .setClient(new OkClient())
-        .setConverter(new GsonConverter(gson))
-        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
-        .build()
-        .create(AtndService.class);
+  public ApplicationModule(MyApplication app) {
+    this.app = app;
   }
 
-  @Provides @Singleton public QiitaService getQiitaService() {
+  @Provides @Singleton public Picasso providePicasso() {
 
-    Gson gson = new GsonBuilder().create();
+    OkHttpClient client = new OkHttpClient();
+    client.setConnectTimeout(3, TimeUnit.SECONDS);
+    client.setReadTimeout(10, TimeUnit.SECONDS);
+    client.setWriteTimeout(10, TimeUnit.SECONDS);
+    try {
+      File cacheDir = new File(app.getCacheDir(), "images");
+      Cache cache = new Cache(cacheDir, 5 * 1024 * 1024);
+      client.setCache(cache);
+    } catch (IOException e) {
+      Timber.e(e, "Unable to install disk cache.");
+    }
 
-    return new RestAdapter.Builder().setEndpoint(QiitaService.ENDPOINT)
-        .setClient(new OkClient())
-        .setConverter(new GsonConverter(gson))
-        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
-        .build()
-        .create(QiitaService.class);
+    return new Picasso.Builder(app).indicatorsEnabled(BuildConfig.DEBUG)
+        .downloader(new OkHttpDownloader(client))
+        .loggingEnabled(BuildConfig.DEBUG)
+        .listener(new Picasso.Listener() {
+          @Override public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
+            Timber.e(exception, "image load failed : " + uri);
+          }
+        })
+        .build();
   }
 
   @Provides @Singleton public AndroidBus getEventBus() {
