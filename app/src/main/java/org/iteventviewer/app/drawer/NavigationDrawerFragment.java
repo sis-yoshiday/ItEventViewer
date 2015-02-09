@@ -38,7 +38,7 @@ import icepick.Icicle;
 import java.util.List;
 import jp.yokomark.widget.compound.CompoundFrameLayout;
 import org.iteventviewer.app.R;
-import org.iteventviewer.app.util.MenuUtils;
+import org.iteventviewer.util.MenuUtils;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.model.DrawerMenu;
 import rx.Observable;

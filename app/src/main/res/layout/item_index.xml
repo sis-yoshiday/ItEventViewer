@@ -20,7 +20,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:paddingLeft="@dimen/space_lg"
     android:paddingRight="@dimen/space_lg"
     android:paddingTop="@dimen/space_sm"
@@ -30,24 +30,35 @@
 
   <TextView
       android:id="@+id/title"
-      android:layout_width="0dp"
-      android:layout_weight="1"
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:gravity="center_vertical"
       android:lines="3"
       android:ellipsize="end"
       android:textColor="@color/colorTextPrimary"
       tools:text="長いタイトル長いタイトル長いタイトル長いタイトル長いタイトル長いタイトル長いタイトル長いタイトル長いタイトル長いタイトル"/>
 
-  <TextView
-      android:id="@+id/tag"
+  <LinearLayout
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_gravity="center_vertical"
-      android:layout_marginLeft="@dimen/space_sm"
-      android:padding="@dimen/space_xs"
-      android:textSize="@dimen/abc_text_size_caption_material"
-      android:textColor="@color/colorTextSecondary"
-      android:background="@drawable/tag_bg"
-      android:text="ATND"/>
+      android:orientation="horizontal">
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:lines="1"
+        android:textColor="@color/colorTextSecondary"
+        tools:text="05/02/10 19:00"/>
+    <TextView
+        android:id="@+id/tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/space_sm"
+        android:padding="@dimen/space_xs"
+        android:textSize="@dimen/abc_text_size_caption_material"
+        android:textColor="@color/colorTextSecondary"
+        android:background="@drawable/tag_bg"
+        android:text="ATND"/>
+  </LinearLayout>
 </LinearLayout>

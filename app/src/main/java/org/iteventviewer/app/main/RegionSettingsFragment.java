@@ -2,10 +2,8 @@ package org.iteventviewer.app.main;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,12 +18,10 @@ import jp.yokomark.widget.compound.CompoundViewGroup;
 import jp.yokomark.widget.compound.OnCheckedChangeListener;
 import org.iteventviewer.app.BaseFragment;
 import org.iteventviewer.app.R;
-import org.iteventviewer.app.util.PreferenceUtil;
-import org.iteventviewer.app.util.Region;
+import org.iteventviewer.util.PreferenceUtil;
+import org.iteventviewer.util.Region;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
-import rx.Observable;
-import rx.subjects.BehaviorSubject;
 
 /**
  * 地域の登録

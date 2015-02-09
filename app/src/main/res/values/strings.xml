@@ -7,7 +7,7 @@
   <string name="navigation_drawer_open">Open navigation drawer</string>
   <string name="navigation_drawer_close">Close navigation drawer</string>
 
-  <string name="menu_index">インデックス</string>
+  <string name="menu_index">一覧</string>
   <string name="menu_region_settings">地域の設定</string>
   <string name="menu_category_settings">カテゴリーの設定</string>
   <string name="menu_settings">設定</string>
@@ -20,6 +20,7 @@
   <string name="msg_no_result">検索結果がありません</string>
 
   <!-- event detail -->
+  <string name="title_event_detail">イベント詳細</string>
   <string name="event_detail">イベント詳細</string>
   <string name="event_user">参加者一覧</string>
   <string name="to_event_page">イベントサイトへ</string>
@@ -46,6 +47,9 @@
   <string name="atnd">ATND</string>
   <string name="status_accepted">参加</string>
   <string name="status_waiting">キャンセル待ち</string>
+
+  <!-- connpass -->
+  <string name="connpass">connpass</string>
 
   <!-- Qiitta -->
   <string name="qiita_token">170b632121d22fbe1a116faca7ea621ae34e2bac</string>

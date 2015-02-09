@@ -7,7 +7,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import org.iteventviewer.app.drawer.NavigationDrawerFragment;
 import org.iteventviewer.app.drawer.SelectMenuEvent;
-import org.iteventviewer.app.util.MenuUtils;
+import org.iteventviewer.util.MenuUtils;
 import org.iteventviewer.model.DrawerMenu;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;

@@ -20,34 +20,41 @@ import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.Setter;
 import org.iteventviewer.app.BaseFragment;
-import org.iteventviewer.app.EventDetailActivity;
+import org.iteventviewer.app.AtndEventDetailActivity;
 import org.iteventviewer.app.MyApplication;
 import org.iteventviewer.app.R;
-import org.iteventviewer.app.util.PreferenceUtil;
-import org.iteventviewer.app.util.Region;
+import org.iteventviewer.util.PreferenceUtil;
+import org.iteventviewer.util.Region;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.ClickableViewHolder;
 import org.iteventviewer.common.OnItemClickListener;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.model.IndexViewModel;
-import org.iteventviewer.service.atnd.AtndService;
-import org.iteventviewer.service.atnd.EventSearchQuery;
-import org.iteventviewer.service.atnd.json.Event;
-import org.iteventviewer.service.atnd.json.SearchResult;
+import org.iteventviewer.service.atnd.AtndApi;
+import org.iteventviewer.service.atnd.AtndEventSearchQuery;
+import org.iteventviewer.service.atnd.json.AtndEvent;
+import org.iteventviewer.service.atnd.json.AtndSearchResult;
+import org.iteventviewer.service.atnd.model.AtndIndexViewModel;
+import org.iteventviewer.service.compass.ConnpassApi;
+import org.iteventviewer.service.compass.ConnpassEventSearchQuery;
+import org.iteventviewer.service.compass.json.ConnpassEvent;
+import org.iteventviewer.service.compass.json.ConnpassSearchResult;
+import org.iteventviewer.service.compass.model.ConnpassIndexViewModel;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.subscriptions.Subscriptions;
+import rx.functions.Func2;
+import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
 /**
@@ -57,9 +64,10 @@ import timber.log.Timber;
  */
 public class IndexFragment extends BaseFragment {
 
-  @Inject AtndService atndService;
+  @Inject AtndApi atndApi;
+  @Inject ConnpassApi connpassApi;
 
-  private Subscription subscription = Subscriptions.empty();
+  private CompositeSubscription subscription = new CompositeSubscription();
 
   @InjectView(R.id.recyclerView) RecyclerView recyclerView;
   @InjectView(R.id.warningLayout) ViewGroup warningLayout;
@@ -98,7 +106,9 @@ public class IndexFragment extends BaseFragment {
         IndexViewModel item = adapter.getItem(position);
         switch (item.getTag()) {
           case R.string.atnd:
-            EventDetailActivity.launch(getActivity(), item.getEvent());
+            AtndEventDetailActivity.launch(getActivity(), ((AtndIndexViewModel) item).getEvent());
+            break;
+          case R.string.connpass:
             break;
           // TODO サービスごとに追加
         }
@@ -128,85 +138,109 @@ public class IndexFragment extends BaseFragment {
 
   private void search(Region region, Set<String> categories) {
 
+    // atnd
+    Observable<List<AtndIndexViewModel>> atndResultStream = searchAtnd(region, categories);
+
+    // connpass
+    Observable<List<ConnpassIndexViewModel>> connpassResultStream =
+        searchConnpass(region, categories);
+
     progressBar.setVisibility(View.VISIBLE);
 
-    // サービスごとのデータ取得
-
-    // atnd
-    Observable<List<IndexViewModel>> atndSearchResultStream = searchAtnd(region, categories);
-
-    // 各サービスからの取得データをマージ（マージ後に日付でソート）
-
-    subscription = AppObservable.bindFragment(this, atndSearchResultStream)
+    // 各サービスからの取得データのハンドリング
+    subscription.add(AppObservable.bindFragment(this,
+        Observable.zip(atndResultStream, connpassResultStream,
+            new Func2<List<AtndIndexViewModel>, List<ConnpassIndexViewModel>, List<IndexViewModel>>() {
+              @Override public List<IndexViewModel> call(List<AtndIndexViewModel> atndModels,
+                  List<ConnpassIndexViewModel> connpassModels) {
+                // 取得データをマージ
+                List<IndexViewModel> result = Lists.newArrayList();
+                result.addAll(atndModels);
+                result.addAll(connpassModels);
+                return result;
+              }
+            }))
         .subscribeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action1<List<IndexViewModel>>() {
           @Override public void call(List<IndexViewModel> indexViewModels) {
-            // success
-            if (indexViewModels.isEmpty()) {
-              emptyLayout.setVisibility(View.VISIBLE);
-              recyclerView.setVisibility(View.GONE);
-            } else {
-              emptyLayout.setVisibility(View.GONE);
-              recyclerView.setVisibility(View.VISIBLE);
-
-              adapter.setItems(indexViewModels);
-            }
+            // 日付でソート
+            Collections.sort(indexViewModels, IndexViewModel.START_AT_ASC_COMPARATOR);
+            adapter.setItems(indexViewModels);
           }
         }, new Action1<Throwable>() {
           @Override public void call(Throwable throwable) {
-            // failure
             Timber.e(throwable, throwable.getMessage());
+            progressBar.setVisibility(View.GONE);
           }
         }, new Action0() {
           @Override public void call() {
             progressBar.setVisibility(View.GONE);
           }
-        });
+        }));
   }
 
-  private Observable<List<IndexViewModel>> searchAtnd(@Nullable final Region region,
+  private Observable<List<AtndIndexViewModel>> searchAtnd(@Nullable final Region region,
       Set<String> categories) {
 
     // 検索クエリを生成
-    EventSearchQuery.Builder queryBuilder = new EventSearchQuery.Builder();
-    for (String category : categories) {
-      queryBuilder.addKeywordOr(category);
-    }
-    // 30日後まで
-    queryBuilder.addYmds(30);
-    Map<String, String> query = queryBuilder.build();
+    Map<String, String> query = new AtndEventSearchQuery.Builder().addKeywordsOr(categories)
+        .addYmds(30)
+        .count(AtndEventSearchQuery.MAX_COUNT)
+        .build();
 
-    return atndService.searchEvent(query)
-        .map(new Func1<SearchResult<Event>, List<IndexViewModel>>() {
-          @Override public List<IndexViewModel> call(SearchResult<Event> eventSearchResult) {
+    return atndApi.searchEvent(query)
+        .map(new Func1<AtndSearchResult<AtndEvent>, List<AtndIndexViewModel>>() {
+          @Override
+          public List<AtndIndexViewModel> call(AtndSearchResult<AtndEvent> eventSearchResult) {
             return Lists.newArrayList(Collections2.transform(eventSearchResult.getEvents(),
-                new Function<SearchResult.EventContainer<Event>, IndexViewModel>() {
-                  @Override public IndexViewModel apply(SearchResult.EventContainer<Event> input) {
-                    return IndexViewModel.atnd(input.getEvent());
+                new Function<AtndSearchResult.EventContainer<AtndEvent>, AtndIndexViewModel>() {
+                  @Override public AtndIndexViewModel apply(
+                      AtndSearchResult.EventContainer<AtndEvent> input) {
+                    return new AtndIndexViewModel(R.string.atnd, input.getEvent());
                   }
                 }));
           }
         })
-        .flatMap(new Func1<List<IndexViewModel>, Observable<List<IndexViewModel>>>() {
-          @Override
-          public Observable<List<IndexViewModel>> call(List<IndexViewModel> indexViewModels) {
-            return Observable.from(indexViewModels).filter(new Func1<IndexViewModel, Boolean>() {
-              @Override public Boolean call(IndexViewModel indexViewModel) {
-                // NOTE : APIの制約により地域は取得後にフィルタする
-                if (region != null) {
-                  for (String pref : region.getPrefs()) {
-                    if (indexViewModel.getEvent().getAddress().contains(pref)) {
-                      return true;
-                    }
-                  }
-                  return false;
-                } else {
-                  return true;
-                }
-              }
-            }).toList();
+        .flatMap(new Func1<List<AtndIndexViewModel>, Observable<List<AtndIndexViewModel>>>() {
+          @Override public Observable<List<AtndIndexViewModel>> call(
+              List<AtndIndexViewModel> indexViewModels) {
+            return Observable.from(indexViewModels)
+                .filter(AtndIndexViewModel.filter(region))
+                .toList();
           }
         });
+  }
+
+  private Observable<List<ConnpassIndexViewModel>> searchConnpass(@Nullable final Region region,
+      Set<String> categories) {
+
+    // 検索クエリを生成
+    Map<String, String> query = new ConnpassEventSearchQuery.Builder().addKeywordsOr(categories)
+        .addYmds(30)
+        .count(AtndEventSearchQuery.MAX_COUNT)
+        .build();
+
+    return connpassApi.searchEvent(query)
+        .map(new Func1<ConnpassSearchResult, List<ConnpassIndexViewModel>>() {
+          @Override
+          public List<ConnpassIndexViewModel> call(ConnpassSearchResult eventSearchResult) {
+            return Lists.newArrayList(Collections2.transform(eventSearchResult.getEvents(),
+                new Function<ConnpassEvent, ConnpassIndexViewModel>() {
+                  @Override public ConnpassIndexViewModel apply(ConnpassEvent input) {
+                    return new ConnpassIndexViewModel(R.string.connpass, input);
+                  }
+                }));
+          }
+        })
+        .flatMap(
+            new Func1<List<ConnpassIndexViewModel>, Observable<List<ConnpassIndexViewModel>>>() {
+              @Override public Observable<List<ConnpassIndexViewModel>> call(
+                  List<ConnpassIndexViewModel> indexViewModels) {
+                return Observable.from(indexViewModels)
+                    .filter(ConnpassIndexViewModel.filter(region))
+                    .toList();
+              }
+            });
   }
 
   class IndexAdapter extends SimpleRecyclerAdapter<IndexViewModel, BindableViewHolder> {
@@ -233,6 +267,7 @@ public class IndexFragment extends BaseFragment {
 
       @InjectView(R.id.title) TextView title;
       @InjectView(R.id.tag) TextView tag;
+      @InjectView(R.id.date) TextView date;
 
       public ViewHolder(View itemView, OnItemClickListener listener) {
         super(itemView, listener);
@@ -242,10 +277,10 @@ public class IndexFragment extends BaseFragment {
       @Override public void bind(int position) {
 
         IndexViewModel item = getItem(position);
-        Event event = item.getEvent();
 
-        title.setText(event.getTitle());
+        title.setText(item.getTitle());
         tag.setText(item.getTag());
+        date.setText(item.getStartedAt().toString("yyyy/MM/dd HH:mm"));
       }
     }
   }

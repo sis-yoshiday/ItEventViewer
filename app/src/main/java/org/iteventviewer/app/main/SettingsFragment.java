@@ -14,7 +14,7 @@ import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import org.iteventviewer.app.BaseFragment;
-import org.iteventviewer.app.util.SettingsUtil;
+import org.iteventviewer.util.SettingsUtil;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.OnItemClickListener;
 import org.iteventviewer.common.SimpleRecyclerAdapter;

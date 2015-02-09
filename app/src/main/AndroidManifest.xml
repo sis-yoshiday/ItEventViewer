@@ -21,8 +21,9 @@
       </intent-filter>
     </activity>
     <activity
-        android:name=".EventDetailActivity"
-        android:label="@string/app_name"/>
+        android:name=".AtndEventDetailActivity"/>
+    <activity
+        android:name=".ConnpassEventDetailActivity"/>
   </application>
 
 </manifest>
