@@ -82,7 +82,6 @@ public class ConnpassEventDetailActivity extends ToolBarActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     ButterKnife.inject(this);
-    ((MyApplication) getApplication()).inject(this);
 
     event = (ConnpassEvent) getIntent().getSerializableExtra(EXTRA_EVENT);
 

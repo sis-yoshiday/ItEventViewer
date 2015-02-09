@@ -26,12 +26,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.Setter;
-import org.iteventviewer.app.BaseFragment;
 import org.iteventviewer.app.AtndEventDetailActivity;
+import org.iteventviewer.app.BaseFragment;
+import org.iteventviewer.app.ConnpassEventDetailActivity;
 import org.iteventviewer.app.MyApplication;
 import org.iteventviewer.app.R;
-import org.iteventviewer.util.PreferenceUtil;
-import org.iteventviewer.util.Region;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.ClickableViewHolder;
 import org.iteventviewer.common.OnItemClickListener;
@@ -47,6 +46,8 @@ import org.iteventviewer.service.compass.ConnpassEventSearchQuery;
 import org.iteventviewer.service.compass.json.ConnpassEvent;
 import org.iteventviewer.service.compass.json.ConnpassSearchResult;
 import org.iteventviewer.service.compass.model.ConnpassIndexViewModel;
+import org.iteventviewer.util.PreferenceUtil;
+import org.iteventviewer.util.Region;
 import rx.Observable;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -104,13 +105,15 @@ public class IndexFragment extends BaseFragment {
     adapter.setOnItemClickListener(new OnItemClickListener() {
       @Override public void onItemClick(View itemView, int position) {
         IndexViewModel item = adapter.getItem(position);
+        // NOTE : サービスが増えたら追加
         switch (item.getTag()) {
           case R.string.atnd:
             AtndEventDetailActivity.launch(getActivity(), ((AtndIndexViewModel) item).getEvent());
             break;
           case R.string.connpass:
+            ConnpassEventDetailActivity.launch(getActivity(),
+                ((ConnpassIndexViewModel) item).getEvent());
             break;
-          // TODO サービスごとに追加
         }
       }
     });
