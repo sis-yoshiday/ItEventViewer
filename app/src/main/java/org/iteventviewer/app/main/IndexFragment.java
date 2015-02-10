@@ -17,10 +17,14 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
+import com.google.common.base.CaseFormat;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +38,6 @@ import org.iteventviewer.app.R;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.ClickableViewHolder;
 import org.iteventviewer.common.OnItemClickListener;
-import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.model.IndexViewModel;
 import org.iteventviewer.service.atnd.AtndApi;
 import org.iteventviewer.service.atnd.AtndEventSearchQuery;
@@ -46,6 +49,11 @@ import org.iteventviewer.service.compass.ConnpassEventSearchQuery;
 import org.iteventviewer.service.compass.json.ConnpassEvent;
 import org.iteventviewer.service.compass.json.ConnpassSearchResult;
 import org.iteventviewer.service.compass.model.ConnpassIndexViewModel;
+import org.iteventviewer.service.zusaar.ZusaarApi;
+import org.iteventviewer.service.zusaar.ZusaarEventSearchQuery;
+import org.iteventviewer.service.zusaar.json.ZusaarEvent;
+import org.iteventviewer.service.zusaar.json.ZusaarSearchResult;
+import org.iteventviewer.service.zusaar.model.ZusaarIndexViewModel;
 import org.iteventviewer.util.PreferenceUtil;
 import org.iteventviewer.util.Region;
 import rx.Observable;
@@ -54,7 +62,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.functions.Func2;
+import rx.functions.Func3;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
@@ -67,6 +75,7 @@ public class IndexFragment extends BaseFragment {
 
   @Inject AtndApi atndApi;
   @Inject ConnpassApi connpassApi;
+  @Inject ZusaarApi zusaarApi;
 
   private CompositeSubscription subscription = new CompositeSubscription();
 
@@ -148,18 +157,23 @@ public class IndexFragment extends BaseFragment {
     Observable<List<ConnpassIndexViewModel>> connpassResultStream =
         searchConnpass(region, categories);
 
+    // Zusaar (現状APIとして使い物にならない)
+    Observable<List<ZusaarIndexViewModel>> zusaarResultStream = searchZusaar(region, categories);
+
     progressBar.setVisibility(View.VISIBLE);
 
     // 各サービスからの取得データのハンドリング
     subscription.add(AppObservable.bindFragment(this,
-        Observable.zip(atndResultStream, connpassResultStream,
-            new Func2<List<AtndIndexViewModel>, List<ConnpassIndexViewModel>, List<IndexViewModel>>() {
+        Observable.zip(atndResultStream, connpassResultStream, zusaarResultStream,
+            new Func3<List<AtndIndexViewModel>, List<ConnpassIndexViewModel>, List<ZusaarIndexViewModel>, List<IndexViewModel>>() {
               @Override public List<IndexViewModel> call(List<AtndIndexViewModel> atndModels,
-                  List<ConnpassIndexViewModel> connpassModels) {
+                  List<ConnpassIndexViewModel> connpassModels,
+                  List<ZusaarIndexViewModel> zusaarModels) {
                 // 取得データをマージ
                 List<IndexViewModel> result = Lists.newArrayList();
                 result.addAll(atndModels);
                 result.addAll(connpassModels);
+                result.addAll(zusaarModels);
                 return result;
               }
             }))
@@ -167,8 +181,9 @@ public class IndexFragment extends BaseFragment {
         .subscribe(new Action1<List<IndexViewModel>>() {
           @Override public void call(List<IndexViewModel> indexViewModels) {
             // 日付でソート
-            Collections.sort(indexViewModels, IndexViewModel.START_AT_ASC_COMPARATOR);
             adapter.setItems(indexViewModels);
+            adapter.sort(IndexViewModel.START_AT_ASC_COMPARATOR);
+            adapter.notifyDataSetChanged();
           }
         }, new Action1<Throwable>() {
           @Override public void call(Throwable throwable) {
@@ -199,7 +214,7 @@ public class IndexFragment extends BaseFragment {
                 new Function<AtndSearchResult.EventContainer<AtndEvent>, AtndIndexViewModel>() {
                   @Override public AtndIndexViewModel apply(
                       AtndSearchResult.EventContainer<AtndEvent> input) {
-                    return new AtndIndexViewModel(R.string.atnd, input.getEvent());
+                    return new AtndIndexViewModel(input.getEvent());
                   }
                 }));
           }
@@ -220,7 +235,7 @@ public class IndexFragment extends BaseFragment {
     // 検索クエリを生成
     Map<String, String> query = new ConnpassEventSearchQuery.Builder().addKeywordsOr(categories)
         .addYmds(30)
-        .count(AtndEventSearchQuery.MAX_COUNT)
+        .count(ConnpassEventSearchQuery.MAX_COUNT)
         .build();
 
     return connpassApi.searchEvent(query)
@@ -230,7 +245,7 @@ public class IndexFragment extends BaseFragment {
             return Lists.newArrayList(Collections2.transform(eventSearchResult.getEvents(),
                 new Function<ConnpassEvent, ConnpassIndexViewModel>() {
                   @Override public ConnpassIndexViewModel apply(ConnpassEvent input) {
-                    return new ConnpassIndexViewModel(R.string.connpass, input);
+                    return new ConnpassIndexViewModel(input);
                   }
                 }));
           }
@@ -246,24 +261,86 @@ public class IndexFragment extends BaseFragment {
             });
   }
 
-  class IndexAdapter extends SimpleRecyclerAdapter<IndexViewModel, BindableViewHolder> {
+  private Observable<List<ZusaarIndexViewModel>> searchZusaar(@Nullable final Region region,
+      Set<String> categories) {
+
+    // NOTE : Zusaarのkeyword, keyword_orはcase-sensitiveなので1文字目を大文字にしたやつとかを無理やり入れる
+    Set<String> newCategories = Sets.newHashSet(
+        Observable.from(categories).flatMap(new Func1<String, Observable<String>>() {
+          @Override public Observable<String> call(String s) {
+            return Observable.from(
+                Sets.newHashSet(s, CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, s),
+                    CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, s)));
+          }
+        }).toList().toBlocking().first());
+
+    // 検索クエリを生成
+    Map<String, String> query = new ZusaarEventSearchQuery.Builder().addKeywordsOr(newCategories)
+        .addYmds(30)
+        .count(ZusaarEventSearchQuery.MAX_COUNT)
+        .build();
+
+    return zusaarApi.searchEvent(query)
+        .map(new Func1<ZusaarSearchResult, List<ZusaarIndexViewModel>>() {
+          @Override public List<ZusaarIndexViewModel> call(ZusaarSearchResult eventSearchResult) {
+
+            List<ZusaarEvent> events = eventSearchResult.getEvents();
+
+            return Lists.newArrayList(Collections2.transform(events,
+                new Function<ZusaarEvent, ZusaarIndexViewModel>() {
+                  @Override public ZusaarIndexViewModel apply(ZusaarEvent input) {
+                    return new ZusaarIndexViewModel(input);
+                  }
+                }));
+          }
+        })
+        .flatMap(new Func1<List<ZusaarIndexViewModel>, Observable<List<ZusaarIndexViewModel>>>() {
+          @Override public Observable<List<ZusaarIndexViewModel>> call(
+              List<ZusaarIndexViewModel> indexViewModels) {
+            return Observable.from(indexViewModels)
+                .filter(ZusaarIndexViewModel.filter(region))
+                .toList();
+          }
+        });
+  }
+
+  class IndexAdapter extends RecyclerView.Adapter<BindableViewHolder> {
+
+    private Context context;
+    private LayoutInflater inflater;
+    private List<? extends IndexViewModel> items;
 
     @Setter private OnItemClickListener onItemClickListener;
 
     public IndexAdapter(Context context) {
-      super(context);
+      this.context = context;
+      this.inflater = LayoutInflater.from(context);
+      this.items = new ArrayList<>();
     }
 
-    @Override protected View newView(ViewGroup viewGroup, int viewType) {
-      return inflater.inflate(R.layout.item_index, viewGroup, false);
-    }
-
-    @Override protected BindableViewHolder newViewHolder(View view, int viewType) {
+    @Override public BindableViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+      View view = inflater.inflate(R.layout.item_index, parent, false);
       return new ViewHolder(view, onItemClickListener);
     }
 
     @Override public void onBindViewHolder(BindableViewHolder holder, int position) {
       holder.bind(position);
+    }
+
+    @Override public int getItemCount() {
+      return items.size();
+    }
+
+    public IndexViewModel getItem(int position) {
+      return items.get(position);
+    }
+
+    public void setItems(List<? extends IndexViewModel> items) {
+      this.items = items;
+    }
+
+    public void sort(Comparator<IndexViewModel> comparator) {
+      Collections.sort(items, comparator);
     }
 
     class ViewHolder extends ClickableViewHolder {

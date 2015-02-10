@@ -19,7 +19,7 @@ import org.joda.time.LocalDateTime;
 
   public abstract LocalDateTime getStartedAt();
 
-  public static final Comparator<? super IndexViewModel> START_AT_ASC_COMPARATOR =
+  public static final Comparator<IndexViewModel> START_AT_ASC_COMPARATOR =
       new Comparator<IndexViewModel>() {
         @Override public int compare(IndexViewModel lhs, IndexViewModel rhs) {
           return lhs.getStartedAt().compareTo(rhs.getStartedAt());

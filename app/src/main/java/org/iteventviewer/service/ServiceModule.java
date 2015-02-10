@@ -19,6 +19,7 @@ import org.iteventviewer.common.LocalDateTimeConverter;
 import org.iteventviewer.service.atnd.AtndApi;
 import org.iteventviewer.service.compass.ConnpassApi;
 import org.iteventviewer.service.qiita.QiitaApi;
+import org.iteventviewer.service.zusaar.ZusaarApi;
 import retrofit.RestAdapter;
 import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
@@ -91,6 +92,34 @@ import timber.log.Timber;
         .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
         .build()
         .create(ConnpassApi.class);
+  }
+
+  @Provides @Singleton public ZusaarApi provideZusaarApi() {
+
+    LocalDateTimeConverter localDateTimeConverter =
+        new LocalDateTimeConverter("yyyy-MM-dd'T'HH:mm:ssZ");
+
+    Gson gson =
+        new GsonBuilder().registerTypeAdapter(LocalDateTimeConverter.TYPE, localDateTimeConverter)
+            .create();
+
+    OkHttpClient httpClient = new OkHttpClient();
+    httpClient.setConnectTimeout(3, TimeUnit.SECONDS);
+    httpClient.setReadTimeout(3, TimeUnit.SECONDS);
+    try {
+      File cacheDir = new File(context.getCacheDir(), "http");
+      Cache cache = new Cache(cacheDir, 2 * 1024 * 1024);
+      httpClient.setCache(cache);
+    } catch (IOException e) {
+      Timber.e(e, "Unable to install disk cache.");
+    }
+
+    return new RestAdapter.Builder().setEndpoint(ZusaarApi.ENDPOINT)
+        .setClient(new OkClient(httpClient))
+        .setConverter(new GsonConverter(gson))
+        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
+        .build()
+        .create(ZusaarApi.class);
   }
 
   @Provides @Singleton public QiitaApi provideQiitaApi() {

@@ -51,6 +51,9 @@
   <!-- connpass -->
   <string name="connpass">connpass</string>
 
+  <!-- Zusaar -->
+  <string name="zusaar">Zusaar</string>
+
   <!-- Qiitta -->
   <string name="qiita_token">170b632121d22fbe1a116faca7ea621ae34e2bac</string>
   

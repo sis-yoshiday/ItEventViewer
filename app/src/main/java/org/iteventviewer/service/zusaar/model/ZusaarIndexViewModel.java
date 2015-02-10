@@ -1,11 +1,12 @@
-package org.iteventviewer.service.compass.model;
+package org.iteventviewer.service.zusaar.model;
 
 import android.support.annotation.Nullable;
 import lombok.Getter;
 import org.iteventviewer.app.R;
-import org.iteventviewer.util.Region;
 import org.iteventviewer.model.IndexViewModel;
 import org.iteventviewer.service.compass.json.ConnpassEvent;
+import org.iteventviewer.service.zusaar.json.ZusaarEvent;
+import org.iteventviewer.util.Region;
 import org.joda.time.LocalDateTime;
 import rx.functions.Func1;
 
@@ -13,12 +14,12 @@ import rx.functions.Func1;
  * Created by yuki_yoshida on 15/02/09.
  */
 @Getter
-public class ConnpassIndexViewModel extends IndexViewModel {
+public class ZusaarIndexViewModel extends IndexViewModel {
 
-  private ConnpassEvent event;
+  private ZusaarEvent event;
 
-  public ConnpassIndexViewModel(ConnpassEvent event) {
-    super(R.string.connpass);
+  public ZusaarIndexViewModel(ZusaarEvent event) {
+    super(R.string.zusaar);
     this.event = event;
   }
 
@@ -30,9 +31,9 @@ public class ConnpassIndexViewModel extends IndexViewModel {
     return event.getStartedAt();
   }
 
-  public static Func1<ConnpassIndexViewModel, Boolean> filter(@Nullable final Region region) {
-    return new Func1<ConnpassIndexViewModel, Boolean>() {
-      @Override public Boolean call(ConnpassIndexViewModel indexViewModel) {
+  public static Func1<ZusaarIndexViewModel, Boolean> filter(@Nullable final Region region) {
+    return new Func1<ZusaarIndexViewModel, Boolean>() {
+      @Override public Boolean call(ZusaarIndexViewModel indexViewModel) {
         // NOTE : APIの制約により地域は取得後にフィルタする
         if (region != null) {
           for (String pref : region.getPrefs()) {

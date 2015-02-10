@@ -1,22 +1,22 @@
-package org.iteventviewer.service.atnd;
+package org.iteventviewer.service.zusaar;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import lombok.Setter;
+import org.iteventviewer.service.atnd.AtndMemberSearchQuery;
 import org.joda.time.DurationFieldType;
 import org.joda.time.LocalDateTime;
 
 /**
  * Created by yuki_yoshida on 15/01/31.
  */
-public class AtndEventSearchQuery extends AtndMemberSearchQuery {
+public class ZusaarEventSearchQuery extends AtndMemberSearchQuery {
 
   /**
    * キーワード（AND）
    */
-  public static final String KEYWORD = "keyword";
+  public static final String KEYWORD = "key_word";
 
   /**
    * キーワード（OR）

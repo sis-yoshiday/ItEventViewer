@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.FluentIterable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.Setter;
@@ -128,8 +129,8 @@ public class ConnpassEventSearchQuery {
       eventIds = new HashSet<>();
       keywords = new HashSet<>();
       keywordsOr = new HashSet<>();
-      yms = new HashSet<>();
-      ymds = new HashSet<>();
+      yms = new LinkedHashSet<>();
+      ymds = new LinkedHashSet<>();
       nicknames = new HashSet<>();
       ownerNicknames = new HashSet<>();
       seriesIds = new HashSet<>();
