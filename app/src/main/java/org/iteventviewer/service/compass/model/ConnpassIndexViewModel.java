@@ -1,6 +1,7 @@
 package org.iteventviewer.service.compass.model;
 
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import lombok.Getter;
 import org.iteventviewer.app.R;
 import org.iteventviewer.util.Region;
@@ -36,7 +37,10 @@ public class ConnpassIndexViewModel extends IndexViewModel {
         // NOTE : APIの制約により地域は取得後にフィルタする
         if (region != null) {
           for (String pref : region.getPrefs()) {
-            if (indexViewModel.getEvent().getAddress().contains(pref)) {
+            String address = indexViewModel.getEvent().getAddress();
+            if (TextUtils.isEmpty(address)) {
+              return false;
+            } else if (address.contains(pref)) {
               return true;
             }
           }
