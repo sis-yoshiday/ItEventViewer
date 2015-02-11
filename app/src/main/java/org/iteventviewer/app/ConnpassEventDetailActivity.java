@@ -9,7 +9,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,34 +16,12 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.gc.materialdesign.views.ButtonFlat;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
-import java.util.List;
-import java.util.Map;
-import javax.inject.Inject;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
-import org.iteventviewer.service.atnd.AtndApi;
-import org.iteventviewer.service.atnd.AtndEventSearchQuery;
-import org.iteventviewer.service.atnd.AtndMemberSearchQuery;
-import org.iteventviewer.service.atnd.json.AtndEvent;
-import org.iteventviewer.service.atnd.json.AtndEventMember;
-import org.iteventviewer.service.atnd.json.AtndSearchResult;
-import org.iteventviewer.service.atnd.json.AtndUser;
 import org.iteventviewer.service.atnd.model.AtndEventDetailViewModel;
 import org.iteventviewer.service.compass.json.ConnpassEvent;
 import org.iteventviewer.service.compass.model.ConnpassEventDetailViewModel;
-import org.iteventviewer.util.SnsUtil;
-import rx.Observable;
-import rx.Subscriber;
 import rx.Subscription;
-import rx.android.app.AppObservable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.android.view.OnClickEvent;
-import rx.android.view.ViewObservable;
-import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -108,7 +85,8 @@ public class ConnpassEventDetailActivity extends ToolBarActivity {
     return super.onOptionsItemSelected(item);
   }
 
-  class EventDetailAdapter extends SimpleRecyclerAdapter<ConnpassEventDetailViewModel, BindableViewHolder> {
+  class EventDetailAdapter
+      extends SimpleRecyclerAdapter<ConnpassEventDetailViewModel, BindableViewHolder> {
 
     public EventDetailAdapter(Context context) {
       super(context);
@@ -169,16 +147,12 @@ public class ConnpassEventDetailActivity extends ToolBarActivity {
       @InjectView(R.id.catchText) TextView catchText;
       @InjectView(R.id.description) TextView description;
       @InjectView(R.id.eventUrl) ButtonFlat eventUrlButton;
-      @InjectView(R.id.url) ButtonFlat urlButton;
 
       @InjectView(R.id.date) TextView date;
 
       @InjectView(R.id.accepted) TextView accepted;
       @InjectView(R.id.limit) TextView limit;
       @InjectView(R.id.waiting) TextView waiting;
-
-      @InjectView(R.id.address) TextView address;
-      @InjectView(R.id.place) TextView place;
 
       public DetailViewHolder(View itemView) {
         super(itemView);
@@ -199,19 +173,11 @@ public class ConnpassEventDetailActivity extends ToolBarActivity {
         eventUrlButton.setVisibility(TextUtils.isEmpty(eventUrl) ? View.GONE : View.VISIBLE);
         eventUrlButton.setOnClickListener(new View.OnClickListener() {
           @Override public void onClick(View v) {
-            startActivity(new Intent(Intent.ACTION_VIEW,
-                Uri.parse(eventUrl)));
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(eventUrl)));
           }
         });
 
         final String url = item.getEventUrl();
-        urlButton.setVisibility(TextUtils.isEmpty(url) ? View.GONE : View.VISIBLE);
-        urlButton.setOnClickListener(new View.OnClickListener() {
-          @Override public void onClick(View v) {
-            startActivity(new Intent(Intent.ACTION_VIEW,
-                Uri.parse(url)));
-          }
-        });
 
         // when
         date.setText(item.getEventDateString());
@@ -227,10 +193,6 @@ public class ConnpassEventDetailActivity extends ToolBarActivity {
         }
 
         // where
-        address.setText(item.getAddress());
-        place.setText(item.getPlace());
-        item.getLat();
-        item.getLng();
       }
     }
   }

@@ -8,7 +8,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.text.TextUtils;
+import android.text.style.ClickableSpan;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +16,6 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.gc.materialdesign.views.ButtonFlat;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
@@ -34,25 +32,20 @@ import org.iteventviewer.service.atnd.json.AtndUser;
 import org.iteventviewer.service.atnd.model.AtndEventDetailViewModel;
 import org.iteventviewer.util.SnsUtil;
 import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.view.OnClickEvent;
 import rx.android.view.ViewObservable;
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.subscriptions.Subscriptions;
-import timber.log.Timber;
+import rx.subscriptions.CompositeSubscription;
 
 /**
  * TODO デザイン
- * TODO Share
- * TODO HTMLスニペットをどう表示させるか
  * TODO twitterへのリンク
  * TODO 100名以上参加者がいる場合のページネーション
  */
-public class AtndEventDetailActivity extends ToolBarActivity {
+public class AtndEventDetailActivity extends BaseEventDetailActivity {
 
   public static final String EXTRA_EVENT = "event";
 
@@ -64,7 +57,7 @@ public class AtndEventDetailActivity extends ToolBarActivity {
 
   private Observable<AtndSearchResult<AtndEventMember>> currentResultObservable;
 
-  private Subscription subscription = Subscriptions.empty();
+  private CompositeSubscription subscription = new CompositeSubscription();
 
   private AtndEvent event;
 
@@ -76,6 +69,13 @@ public class AtndEventDetailActivity extends ToolBarActivity {
   }
 
   /* activity lifecycle */
+
+  @Override protected Intent createShareIntent() {
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+    shareIntent.setType("text/plain");
+    shareIntent.putExtra(Intent.EXTRA_TEXT, event.getEventUrl());
+    return shareIntent;
+  }
 
   @Override protected String title() {
     return getString(R.string.title_event_detail);
@@ -97,13 +97,11 @@ public class AtndEventDetailActivity extends ToolBarActivity {
     recyclerView.setLayoutManager(layoutManager);
 
     adapter = new EventDetailAdapter(this);
-    adapter.addItem(AtndEventDetailViewModel.header(getString(R.string.event_detail)));
     adapter.addItem(AtndEventDetailViewModel.detail(event));
-    adapter.addItem(AtndEventDetailViewModel.header(getString(R.string.event_user)));
     recyclerView.setAdapter(adapter);
 
     // 取得する件数
-    final int searchCount = event.getMemberFetchCount();
+    final int searchCount = event.hasLimit() ? event.getMemberFetchCount() : 0;
 
     final Map<String, String> query =
         new AtndMemberSearchQuery.Builder().addEventId(event.getEventId())
@@ -112,7 +110,7 @@ public class AtndEventDetailActivity extends ToolBarActivity {
 
     currentResultObservable = atndApi.searchEventMember(query);
 
-    subscription = AppObservable.bindActivity(this, currentResultObservable)
+    subscription.add(AppObservable.bindActivity(this, currentResultObservable)
         .subscribeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action1<AtndSearchResult<AtndEventMember>>() {
           @Override public void call(AtndSearchResult<AtndEventMember> result) {
@@ -132,49 +130,47 @@ public class AtndEventDetailActivity extends ToolBarActivity {
                       }
                     });
 
-            // 参加者をソート
-            Observable<List<AtndUser>> acceptedMemberObservable =
-                userObservable.filter(AtndUser.FILTER_ACCEPTED)
-                    .toSortedList(AtndUser.NAME_COMPARATOR);
+            // TODO 0件考慮
+            // 参加者
+            adapter.addItem(AtndEventDetailViewModel.header(getString(R.string.status_accepted)));
+            adapter.addItems(Lists.newArrayList(userObservable.filter(AtndUser.FILTER_ACCEPTED)
+                .toSortedList(AtndUser.NAME_COMPARATOR)
+                .flatMap(new Func1<List<AtndUser>, Observable<AtndUser>>() {
+                  @Override public Observable<AtndUser> call(List<AtndUser> atndUsers) {
+                    return Observable.from(atndUsers);
+                  }
+                })
+                .map(new Func1<AtndUser, AtndEventDetailViewModel>() {
+                  @Override public AtndEventDetailViewModel call(AtndUser atndUser) {
+                    return AtndEventDetailViewModel.user(atndUser);
+                  }
+                })
+                .toBlocking()
+                .toIterable()));
 
-            // キャンセル待ちをソート
-            Observable<List<AtndUser>> waitingMemberObservable =
-                userObservable.filter(AtndUser.FILTER_WAITING)
-                    .toSortedList(AtndUser.NAME_COMPARATOR);
-
-            // マージして表示用モデルに
-            Observable<List<AtndEventDetailViewModel>> viewModelObservable =
-                Observable.merge(acceptedMemberObservable, waitingMemberObservable)
-                    .map(new Func1<List<AtndUser>, List<AtndEventDetailViewModel>>() {
-                      @Override public List<AtndEventDetailViewModel> call(List<AtndUser> users) {
-                        return Lists.newArrayList(Collections2.transform(users,
-                            new Function<AtndUser, AtndEventDetailViewModel>() {
-                              @Override public AtndEventDetailViewModel apply(AtndUser input) {
-                                return AtndEventDetailViewModel.user(input);
-                              }
-                            }));
-                      }
-                    });
-
-            viewModelObservable.subscribe(new Subscriber<List<AtndEventDetailViewModel>>() {
-              @Override public void onCompleted() {
-              }
-
-              @Override public void onError(Throwable e) {
-                Timber.e(e, e.getMessage());
-                unsubscribe();
-              }
-
-              @Override public void onNext(List<AtndEventDetailViewModel> eventDetailViewModels) {
-                adapter.addItems(eventDetailViewModels);
-              }
-            });
+            // TODO 0件考慮
+            // キャンセル待ち
+            adapter.addItem(AtndEventDetailViewModel.header(getString(R.string.status_waiting)));
+            adapter.addItems(Lists.newArrayList(userObservable.filter(AtndUser.FILTER_WAITING)
+                .toSortedList(AtndUser.NAME_COMPARATOR)
+                .flatMap(new Func1<List<AtndUser>, Observable<AtndUser>>() {
+                  @Override public Observable<AtndUser> call(List<AtndUser> atndUsers) {
+                    return Observable.from(atndUsers);
+                  }
+                })
+                .map(new Func1<AtndUser, AtndEventDetailViewModel>() {
+                  @Override public AtndEventDetailViewModel call(AtndUser atndUser) {
+                    return AtndEventDetailViewModel.user(atndUser);
+                  }
+                })
+                .toBlocking()
+                .toIterable()));
           }
         }, new Action1<Throwable>() {
           @Override public void call(Throwable throwable) {
 
           }
-        });
+        }));
   }
 
   @Override protected void onDestroy() {
@@ -255,17 +251,18 @@ public class AtndEventDetailActivity extends ToolBarActivity {
 
       @InjectView(R.id.catchText) TextView catchText;
       @InjectView(R.id.description) TextView description;
-      @InjectView(R.id.eventUrl) ButtonFlat eventUrlButton;
-      @InjectView(R.id.url) ButtonFlat urlButton;
+      @InjectView(R.id.eventUrl) TextView eventUrlText;
+      @InjectView(R.id.refUrl) TextView refUrlText;
 
       @InjectView(R.id.date) TextView date;
 
+      @InjectView(R.id.stateNotEmptyContainer) ViewGroup statusNotEmptyContainer;
+      @InjectView(R.id.stateEmpty) TextView statusEmpty;
       @InjectView(R.id.accepted) TextView accepted;
       @InjectView(R.id.limit) TextView limit;
       @InjectView(R.id.waiting) TextView waiting;
 
-      @InjectView(R.id.address) TextView address;
-      @InjectView(R.id.place) TextView place;
+      @InjectView(R.id.addressAndPlace) TextView addressAndPlace;
 
       public DetailViewHolder(View itemView) {
         super(itemView);
@@ -274,56 +271,55 @@ public class AtndEventDetailActivity extends ToolBarActivity {
 
       @Override public void bind(int position) {
 
-        AtndEvent item = getItem(position).getEvent();
+        final AtndEvent item = getItem(position).getEvent();
 
         // what
         title.setText(item.getTitle());
-        owner.setText(item.getOwnerString());
+        // FIXME 動作してない
+        owner.setText(item.getOwnerSpannableString(new ClickableSpan() {
+          @Override public void onClick(View widget) {
+
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse(SnsUtil.twitterUrlById(item.getOwnerTwitterId()))));
+          }
+        }));
         catchText.setText(item.getCatchText());
         description.setText(Html.fromHtml(item.getDescription()));
 
-        final String eventUrl = item.getEventUrl();
-        eventUrlButton.setVisibility(TextUtils.isEmpty(eventUrl) ? View.GONE : View.VISIBLE);
-        eventUrlButton.setOnClickListener(new View.OnClickListener() {
-          @Override public void onClick(View v) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(eventUrl)));
-          }
-        });
-
-        final String url = item.getUrl();
-        urlButton.setVisibility(TextUtils.isEmpty(url) ? View.GONE : View.VISIBLE);
-        urlButton.setOnClickListener(new View.OnClickListener() {
-          @Override public void onClick(View v) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-          }
-        });
+        eventUrlText.setText(item.getEventUrlText(self));
+        refUrlText.setText(item.getRefUrlText(self));
 
         // when
+        // TODO カレンダーへのリンク
         date.setText(item.getEventDateString());
 
         // how
-        limit.setText(String.valueOf(item.getLimit()));
-        accepted.setText(String.valueOf(item.getAccepted()));
-        if (item.isLimitOver()) {
-          waiting.setVisibility(View.VISIBLE);
+        if (item.hasLimit()) {
+          statusNotEmptyContainer.setVisibility(View.VISIBLE);
+          statusEmpty.setVisibility(View.GONE);
+          limit.setText(String.valueOf(item.getLimit()));
+          accepted.setText(String.valueOf(item.getAccepted()));
+          accepted.setTextColor(item.getAcceptedColor(self));
           waiting.setText(String.valueOf(item.getWaiting()));
+          waiting.setTextColor(item.getWaitingColor(self));
         } else {
-          waiting.setVisibility(View.GONE);
+          statusNotEmptyContainer.setVisibility(View.GONE);
+          statusEmpty.setVisibility(View.VISIBLE);
         }
 
         // where
-        address.setText(item.getAddress());
-        place.setText(item.getPlace());
-        item.getLat();
-        item.getLng();
+        if (item.hasLocation()) {
+          // FIXME 動作してない
+          addressAndPlace.setText(item.getAddressAndPlaceSpannableString(self));
+        } else {
+          addressAndPlace.setText(item.getAddressAndPlaceString());
+        }
       }
     }
 
     class MemberViewHolder extends BindableViewHolder {
 
       @InjectView(R.id.name) TextView name;
-      @InjectView(R.id.status) TextView status;
-      @InjectView(R.id.twitter) ButtonFlat twitter;
 
       public MemberViewHolder(View itemView) {
         super(itemView);
@@ -335,17 +331,6 @@ public class AtndEventDetailActivity extends ToolBarActivity {
         final AtndUser item = getItem(position).getUser();
 
         name.setText(item.getNameString());
-
-        status.setText(item.getStatusString());
-
-        twitter.setVisibility(item.hasTwitterId() ? View.VISIBLE : View.GONE);
-        ViewObservable.clicks(twitter).subscribe(new Action1<OnClickEvent>() {
-          @Override public void call(OnClickEvent onClickEvent) {
-
-            startActivity(new Intent(Intent.ACTION_VIEW,
-                Uri.parse(SnsUtil.twitterUrlById(item.getTwitterId()))));
-          }
-        });
       }
     }
   }

@@ -6,4 +6,5 @@
     android:layout_height="wrap_content"
     android:padding="@dimen/space_sm"
     android:textSize="@dimen/abc_text_size_large_material"
-    tools:text="@string/event_detail"/>
+    android:textColor="@color/colorTextPrimary"
+    tools:text="@string/event_user"/>

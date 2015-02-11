@@ -32,6 +32,7 @@
     <item name="android:fitsSystemWindows">true</item>
     <item name="android:windowBackground">@color/windowBackground</item>
     <item name="android:listDivider">@drawable/divider</item>
+    <item name="android:textColor">@color/colorTextPrimary</item>
   </style>
 
   <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
@@ -43,4 +44,5 @@
     <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
     <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
   </style>
+
 </resources>

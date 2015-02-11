@@ -3,13 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="@dimen/space_sm">
 
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:orientation="vertical"
-      android:layout_margin="@dimen/space_sm">
+      android:layout_marginBottom="@dimen/space_sm">
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
@@ -21,6 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/space_sm"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="@dimen/abc_text_size_caption_material"
         tools:text="by foo(@foo)"/>
   </LinearLayout>
@@ -29,35 +31,51 @@
       android:id="@+id/catchText"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_margin="@dimen/space_sm"
+      android:layout_marginBottom="@dimen/space_sm"
       tools:text="今回のテーマは Google App Engine。"/>
 
   <TextView
       android:id="@+id/description"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_margin="@dimen/space_sm"
+      android:layout_marginBottom="@dimen/space_sm"
+      android:autoLink="all"
       tools:text="クラウド・コンピューティングを扱うディベロッパ・エンジニアのカジュアルなイベント Tokyo Cloud の第２回目を開催します。"/>
 
-  <LinearLayout
+  <TableLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="horizontal"
-      android:layout_margin="@dimen/space_sm">
-    <com.gc.materialdesign.views.ButtonFlat
-        android:id="@+id/eventUrl"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:text="@string/to_event_page"/>
+      android:layout_height="wrap_content">
 
-    <com.gc.materialdesign.views.ButtonFlat
-        android:id="@+id/url"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:text="@string/to_ref_url"/>
-  </LinearLayout>
+    <TableRow
+        android:layout_margin="@dimen/space_sm">
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/url"/>
+      <TextView
+          android:id="@+id/eventUrl"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginLeft="@dimen/space_sm"
+          android:autoLink="web"
+          tools:text="http://google.com"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_margin="@dimen/space_sm">
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/ref_url"/>
+      <TextView
+          android:id="@+id/refUrl"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginLeft="@dimen/space_sm"
+          android:autoLink="web"
+          tools:text="http://google.com"/>
+    </TableRow>
+  </TableLayout>
 
   <LinearLayout
       android:layout_width="wrap_content"
@@ -65,10 +83,18 @@
       android:layout_margin="@dimen/space_sm"
       android:orientation="horizontal">
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="@dimen/space_xs"
+        android:src="@drawable/ic_action_schedule"/>
+
     <TextView
         android:id="@+id/date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         tools:text="2009/06/10 19:00 〜 21:00"/>
 
   </LinearLayout>
@@ -76,66 +102,87 @@
   <LinearLayout
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_margin="@dimen/space_sm"
-      android:orientation="horizontal">
-    <TextView
-        android:id="@+id/accepted"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="80"/>
+      android:orientation="horizontal"
+      android:layout_margin="@dimen/space_sm">
 
-    <TextView
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="/"/>
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="@dimen/space_xs"
+        android:src="@drawable/ic_action_person"/>
 
     <TextView
-        android:id="@+id/limit"
+        android:id="@+id/stateEmpty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="80"/>
+        android:layout_gravity="center_vertical"
+        android:text="@string/no_limit"/>
 
-    <TextView
+    <LinearLayout
+        android:id="@+id/stateNotEmptyContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="人  "/>
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/waiting"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="3人待ち"/>
+      <TextView
+          android:id="@+id/accepted"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_vertical"
+          android:textSize="@dimen/abc_text_size_medium_material"
+          tools:text="80"/>
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="/"/>
+
+      <TextView
+          android:id="@+id/limit"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          tools:text="80"/>
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/unit_person"/>
+
+      <TextView
+          android:id="@+id/waiting"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginLeft="@dimen/space_md"
+          android:textSize="@dimen/abc_text_size_medium_material"
+          tools:text="3"/>
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/unit_person_waiting"/>
+    </LinearLayout>
   </LinearLayout>
 
   <LinearLayout
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_margin="@dimen/space_sm"
-      android:orientation="vertical">
+      android:orientation="horizontal">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="@dimen/space_xs"
+        android:src="@drawable/ic_action_map"/>
 
     <TextView
-        android:id="@+id/address"
+        android:id="@+id/addressAndPlace"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="東京都中央区銀座7-2-6"/>
+        tools:text="東京都中央区銀座7-2-6 Recruit Annex 1　（リクルートアネックス1）　B1F"/>
 
-    <TextView
-        android:id="@+id/place"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="Recruit Annex 1　（リクルートアネックス1）　B1F"/>
-
-    <TextView
-        android:id="@+id/lat"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="35.6708529"/>
-
-    <TextView
-        android:id="@+id/lng"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="139.7605287"/>
   </LinearLayout>
 
 </LinearLayout>

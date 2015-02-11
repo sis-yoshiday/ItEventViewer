@@ -33,6 +33,8 @@ public abstract class BaseActivity extends RxActionBarActivity {
     return NavUtils.getParentActivityIntent(this);
   }
 
+  protected BaseActivity self = BaseActivity.this;
+
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(contentView());

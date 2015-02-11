@@ -16,20 +16,4 @@
       android:layout_gravity="center_vertical"
       tools:text="nickname"/>
 
-  <TextView
-      android:id="@+id/status"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center_vertical"
-      tools:text="参加"/>
-
-  <com.gc.materialdesign.views.ButtonFlat
-      android:id="@+id/twitter"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="@dimen/space_md"
-      android:layout_marginRight="@dimen/space_md"
-      android:textColor="@color/twitter"
-      android:text="@string/twitter"/>
-
 </LinearLayout>

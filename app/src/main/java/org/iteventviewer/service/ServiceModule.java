@@ -11,8 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
-import org.iteventviewer.app.BuildConfig;
 import org.iteventviewer.app.AtndEventDetailActivity;
+import org.iteventviewer.app.BuildConfig;
 import org.iteventviewer.app.main.CategorySettingsFragment;
 import org.iteventviewer.app.main.IndexFragment;
 import org.iteventviewer.common.LocalDateTimeConverter;
@@ -38,7 +38,22 @@ import timber.log.Timber;
     this.context = context;
   }
 
-  @Provides @Singleton public AtndApi provideAtndApi() {
+  @Provides @Singleton public OkHttpClient provideOkHttpClientForApi() {
+
+    OkHttpClient httpClient = new OkHttpClient();
+    httpClient.setConnectTimeout(3, TimeUnit.SECONDS);
+    httpClient.setReadTimeout(3, TimeUnit.SECONDS);
+    try {
+      File cacheDir = new File(context.getCacheDir(), "http");
+      Cache cache = new Cache(cacheDir, 2 * 1024 * 1024);
+      httpClient.setCache(cache);
+    } catch (IOException e) {
+      Timber.e(e, "Unable to install disk cache.");
+    }
+    return httpClient;
+  }
+
+  @Provides @Singleton public AtndApi provideAtndApi(OkHttpClient httpClient) {
 
     LocalDateTimeConverter localDateTimeConverter =
         new LocalDateTimeConverter("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -47,26 +62,13 @@ import timber.log.Timber;
         new GsonBuilder().registerTypeAdapter(LocalDateTimeConverter.TYPE, localDateTimeConverter)
             .create();
 
-    OkHttpClient httpClient = new OkHttpClient();
-    httpClient.setConnectTimeout(3, TimeUnit.SECONDS);
-    httpClient.setReadTimeout(3, TimeUnit.SECONDS);
-    try {
-      File cacheDir = new File(context.getCacheDir(), "http");
-      Cache cache = new Cache(cacheDir, 2 * 1024 * 1024);
-      httpClient.setCache(cache);
-    } catch (IOException e) {
-      Timber.e(e, "Unable to install disk cache.");
-    }
-
-    return new RestAdapter.Builder().setEndpoint(AtndApi.ENDPOINT)
-        .setClient(new OkClient(httpClient))
+    return createDefaultRestAdapterBuilder(httpClient).setEndpoint(AtndApi.ENDPOINT)
         .setConverter(new GsonConverter(gson))
-        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
         .build()
         .create(AtndApi.class);
   }
 
-  @Provides @Singleton public ConnpassApi provideConpassApi() {
+  @Provides @Singleton public ConnpassApi provideConpassApi(OkHttpClient httpClient) {
 
     LocalDateTimeConverter localDateTimeConverter =
         new LocalDateTimeConverter("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -75,26 +77,13 @@ import timber.log.Timber;
         new GsonBuilder().registerTypeAdapter(LocalDateTimeConverter.TYPE, localDateTimeConverter)
             .create();
 
-    OkHttpClient httpClient = new OkHttpClient();
-    httpClient.setConnectTimeout(3, TimeUnit.SECONDS);
-    httpClient.setReadTimeout(3, TimeUnit.SECONDS);
-    try {
-      File cacheDir = new File(context.getCacheDir(), "http");
-      Cache cache = new Cache(cacheDir, 2 * 1024 * 1024);
-      httpClient.setCache(cache);
-    } catch (IOException e) {
-      Timber.e(e, "Unable to install disk cache.");
-    }
-
-    return new RestAdapter.Builder().setEndpoint(ConnpassApi.ENDPOINT)
-        .setClient(new OkClient(httpClient))
+    return createDefaultRestAdapterBuilder(httpClient).setEndpoint(ConnpassApi.ENDPOINT)
         .setConverter(new GsonConverter(gson))
-        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
         .build()
         .create(ConnpassApi.class);
   }
 
-  @Provides @Singleton public ZusaarApi provideZusaarApi() {
+  @Provides @Singleton public ZusaarApi provideZusaarApi(OkHttpClient httpClient) {
 
     LocalDateTimeConverter localDateTimeConverter =
         new LocalDateTimeConverter("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -103,38 +92,25 @@ import timber.log.Timber;
         new GsonBuilder().registerTypeAdapter(LocalDateTimeConverter.TYPE, localDateTimeConverter)
             .create();
 
-    OkHttpClient httpClient = new OkHttpClient();
-    httpClient.setConnectTimeout(3, TimeUnit.SECONDS);
-    httpClient.setReadTimeout(3, TimeUnit.SECONDS);
-    try {
-      File cacheDir = new File(context.getCacheDir(), "http");
-      Cache cache = new Cache(cacheDir, 2 * 1024 * 1024);
-      httpClient.setCache(cache);
-    } catch (IOException e) {
-      Timber.e(e, "Unable to install disk cache.");
-    }
-
-    return new RestAdapter.Builder().setEndpoint(ZusaarApi.ENDPOINT)
-        .setClient(new OkClient(httpClient))
+    return createDefaultRestAdapterBuilder(httpClient).setEndpoint(ZusaarApi.ENDPOINT)
         .setConverter(new GsonConverter(gson))
-        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
         .build()
         .create(ZusaarApi.class);
   }
 
-  @Provides @Singleton public QiitaApi provideQiitaApi() {
+  @Provides @Singleton public QiitaApi provideQiitaApi(OkHttpClient httpClient) {
 
     Gson gson = new GsonBuilder().create();
 
-    OkHttpClient httpClient = new OkHttpClient();
-    httpClient.setConnectTimeout(3, TimeUnit.SECONDS);
-    httpClient.setReadTimeout(3, TimeUnit.SECONDS);
-
-    return new RestAdapter.Builder().setEndpoint(QiitaApi.ENDPOINT)
-        .setClient(new OkClient(httpClient))
+    return createDefaultRestAdapterBuilder(httpClient).setEndpoint(QiitaApi.ENDPOINT)
         .setConverter(new GsonConverter(gson))
-        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
         .build()
         .create(QiitaApi.class);
+  }
+
+  private RestAdapter.Builder createDefaultRestAdapterBuilder(OkHttpClient httpClient) {
+
+    return new RestAdapter.Builder().setClient(new OkClient(httpClient))
+        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE);
   }
 }

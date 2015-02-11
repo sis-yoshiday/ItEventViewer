@@ -20,12 +20,12 @@
   <!-- Service -->
   <color name="twitter">#00aced</color>
 
-  <!-- red600 -->
-  <color name="error">#E53935</color>
-  <!-- orange600 -->
-  <color name="warning">#FB8C00</color>
-  <!-- green600 -->
+  <!-- green 600 -->
   <color name="success">#43A047</color>
+  <!-- orange 600 -->
+  <color name="warning">#FB8C00</color>
+  <!-- red 600 -->
+  <color name="danger">#E53935</color>
   <!-- blue600 -->
   <color name="info">#1E88E5</color>
 </resources>
