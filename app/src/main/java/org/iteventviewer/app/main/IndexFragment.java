@@ -18,8 +18,6 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.google.common.base.CaseFormat;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
@@ -49,6 +47,10 @@ import org.iteventviewer.service.compass.ConnpassEventSearchQuery;
 import org.iteventviewer.service.compass.json.ConnpassEvent;
 import org.iteventviewer.service.compass.json.ConnpassSearchResult;
 import org.iteventviewer.service.compass.model.ConnpassIndexViewModel;
+import org.iteventviewer.service.doorkeeper.DoorkeeperApi;
+import org.iteventviewer.service.doorkeeper.DoorkeeperEventSearchQuery;
+import org.iteventviewer.service.doorkeeper.json.DoorkeeperEvent;
+import org.iteventviewer.service.doorkeeper.model.DoorkeeperIndexViewModel;
 import org.iteventviewer.service.zusaar.ZusaarApi;
 import org.iteventviewer.service.zusaar.ZusaarEventSearchQuery;
 import org.iteventviewer.service.zusaar.json.ZusaarEvent;
@@ -62,7 +64,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.functions.Func3;
+import rx.functions.Func4;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
@@ -76,6 +78,7 @@ public class IndexFragment extends BaseFragment {
   @Inject AtndApi atndApi;
   @Inject ConnpassApi connpassApi;
   @Inject ZusaarApi zusaarApi;
+  @Inject DoorkeeperApi doorkeeperApi;
 
   private CompositeSubscription subscription = new CompositeSubscription();
 
@@ -123,6 +126,12 @@ public class IndexFragment extends BaseFragment {
             ConnpassEventDetailActivity.launch(getActivity(),
                 ((ConnpassIndexViewModel) item).getEvent());
             break;
+          case R.string.zusaar:
+            // TODO
+            break;
+          case R.string.doorkeeper:
+            // TODO
+            break;
         }
       }
     });
@@ -150,30 +159,32 @@ public class IndexFragment extends BaseFragment {
 
   private void search(Region region, Set<String> categories) {
 
-    // atnd
     Observable<List<AtndIndexViewModel>> atndResultStream = searchAtnd(region, categories);
-
-    // connpass
     Observable<List<ConnpassIndexViewModel>> connpassResultStream =
         searchConnpass(region, categories);
-
     // Zusaar (現状APIとして使い物にならない)
     Observable<List<ZusaarIndexViewModel>> zusaarResultStream = searchZusaar(region, categories);
+    Observable<List<DoorkeeperIndexViewModel>> doorKeeperResultStream =
+        searchDoorkeeper(region, categories);
 
     progressBar.setVisibility(View.VISIBLE);
 
+    // FIXME どれかがエラーになっても大丈夫なようにする
     // 各サービスからの取得データのハンドリング
     subscription.add(AppObservable.bindFragment(this,
         Observable.zip(atndResultStream, connpassResultStream, zusaarResultStream,
-            new Func3<List<AtndIndexViewModel>, List<ConnpassIndexViewModel>, List<ZusaarIndexViewModel>, List<IndexViewModel>>() {
+            doorKeeperResultStream,
+            new Func4<List<AtndIndexViewModel>, List<ConnpassIndexViewModel>, List<ZusaarIndexViewModel>, List<DoorkeeperIndexViewModel>, List<IndexViewModel>>() {
               @Override public List<IndexViewModel> call(List<AtndIndexViewModel> atndModels,
                   List<ConnpassIndexViewModel> connpassModels,
-                  List<ZusaarIndexViewModel> zusaarModels) {
+                  List<ZusaarIndexViewModel> zusaarModels,
+                  List<DoorkeeperIndexViewModel> doorkeeperModels) {
                 // 取得データをマージ
                 List<IndexViewModel> result = Lists.newArrayList();
                 result.addAll(atndModels);
                 result.addAll(connpassModels);
                 result.addAll(zusaarModels);
+                result.addAll(doorkeeperModels);
                 return result;
               }
             }))
@@ -207,26 +218,22 @@ public class IndexFragment extends BaseFragment {
         .build();
 
     return atndApi.searchEvent(query)
-        .map(new Func1<AtndSearchResult<AtndEvent>, List<AtndIndexViewModel>>() {
-          @Override
-          public List<AtndIndexViewModel> call(AtndSearchResult<AtndEvent> eventSearchResult) {
-            return Lists.newArrayList(Collections2.transform(eventSearchResult.getEvents(),
-                new Function<AtndSearchResult.EventContainer<AtndEvent>, AtndIndexViewModel>() {
-                  @Override public AtndIndexViewModel apply(
-                      AtndSearchResult.EventContainer<AtndEvent> input) {
-                    return new AtndIndexViewModel(input.getEvent());
-                  }
-                }));
+        .flatMap(
+            new Func1<AtndSearchResult<AtndEvent>, Observable<AtndSearchResult.EventContainer<AtndEvent>>>() {
+
+              @Override public Observable<AtndSearchResult.EventContainer<AtndEvent>> call(
+                  AtndSearchResult<AtndEvent> atndEventAtndSearchResult) {
+                return Observable.from(atndEventAtndSearchResult.getEvents());
+              }
+            })
+        .map(new Func1<AtndSearchResult.EventContainer<AtndEvent>, AtndIndexViewModel>() {
+          @Override public AtndIndexViewModel call(
+              AtndSearchResult.EventContainer<AtndEvent> eventContainer) {
+            return new AtndIndexViewModel(eventContainer.getEvent());
           }
         })
-        .flatMap(new Func1<List<AtndIndexViewModel>, Observable<List<AtndIndexViewModel>>>() {
-          @Override public Observable<List<AtndIndexViewModel>> call(
-              List<AtndIndexViewModel> indexViewModels) {
-            return Observable.from(indexViewModels)
-                .filter(AtndIndexViewModel.filter(region))
-                .toList();
-          }
-        });
+        .filter(AtndIndexViewModel.filter(region))
+        .toList();
   }
 
   private Observable<List<ConnpassIndexViewModel>> searchConnpass(@Nullable final Region region,
@@ -239,26 +246,19 @@ public class IndexFragment extends BaseFragment {
         .build();
 
     return connpassApi.searchEvent(query)
-        .map(new Func1<ConnpassSearchResult, List<ConnpassIndexViewModel>>() {
+        .flatMap(new Func1<ConnpassSearchResult, Observable<ConnpassEvent>>() {
           @Override
-          public List<ConnpassIndexViewModel> call(ConnpassSearchResult eventSearchResult) {
-            return Lists.newArrayList(Collections2.transform(eventSearchResult.getEvents(),
-                new Function<ConnpassEvent, ConnpassIndexViewModel>() {
-                  @Override public ConnpassIndexViewModel apply(ConnpassEvent input) {
-                    return new ConnpassIndexViewModel(input);
-                  }
-                }));
+          public Observable<ConnpassEvent> call(ConnpassSearchResult connpassSearchResult) {
+            return Observable.from(connpassSearchResult.getEvents());
           }
         })
-        .flatMap(
-            new Func1<List<ConnpassIndexViewModel>, Observable<List<ConnpassIndexViewModel>>>() {
-              @Override public Observable<List<ConnpassIndexViewModel>> call(
-                  List<ConnpassIndexViewModel> indexViewModels) {
-                return Observable.from(indexViewModels)
-                    .filter(ConnpassIndexViewModel.filter(region))
-                    .toList();
-              }
-            });
+        .map(new Func1<ConnpassEvent, ConnpassIndexViewModel>() {
+          @Override public ConnpassIndexViewModel call(ConnpassEvent connpassEvent) {
+            return new ConnpassIndexViewModel(connpassEvent);
+          }
+        })
+        .filter(ConnpassIndexViewModel.filter(region))
+        .toList();
   }
 
   private Observable<List<ZusaarIndexViewModel>> searchZusaar(@Nullable final Region region,
@@ -281,27 +281,44 @@ public class IndexFragment extends BaseFragment {
         .build();
 
     return zusaarApi.searchEvent(query)
-        .map(new Func1<ZusaarSearchResult, List<ZusaarIndexViewModel>>() {
-          @Override public List<ZusaarIndexViewModel> call(ZusaarSearchResult eventSearchResult) {
-
-            List<ZusaarEvent> events = eventSearchResult.getEvents();
-
-            return Lists.newArrayList(Collections2.transform(events,
-                new Function<ZusaarEvent, ZusaarIndexViewModel>() {
-                  @Override public ZusaarIndexViewModel apply(ZusaarEvent input) {
-                    return new ZusaarIndexViewModel(input);
-                  }
-                }));
+        .flatMap(new Func1<ZusaarSearchResult, Observable<ZusaarEvent>>() {
+          @Override public Observable<ZusaarEvent> call(ZusaarSearchResult zusaarSearchResult) {
+            return Observable.from(zusaarSearchResult.getEvents());
           }
         })
-        .flatMap(new Func1<List<ZusaarIndexViewModel>, Observable<List<ZusaarIndexViewModel>>>() {
-          @Override public Observable<List<ZusaarIndexViewModel>> call(
-              List<ZusaarIndexViewModel> indexViewModels) {
-            return Observable.from(indexViewModels)
-                .filter(ZusaarIndexViewModel.filter(region))
-                .toList();
+        .map(new Func1<ZusaarEvent, ZusaarIndexViewModel>() {
+          @Override public ZusaarIndexViewModel call(ZusaarEvent zusaarEvent) {
+            return new ZusaarIndexViewModel(zusaarEvent);
           }
-        });
+        })
+        .filter(ZusaarIndexViewModel.filter(region))
+        .toList();
+  }
+
+  private Observable<List<DoorkeeperIndexViewModel>> searchDoorkeeper(@Nullable final Region region,
+      Set<String> categories) {
+
+    // 検索クエリを生成
+    Map<String, String> query =
+        new DoorkeeperEventSearchQuery.Builder().locale(DoorkeeperEventSearchQuery.LOCALE_JA)
+            .sort(DoorkeeperEventSearchQuery.SORT_STARTS_AT)
+            .page(1)
+            .build();
+
+    return doorkeeperApi.searchEvent(query)
+        .flatMap(new Func1<List<DoorkeeperEvent>, Observable<DoorkeeperEvent>>() {
+          @Override
+          public Observable<DoorkeeperEvent> call(List<DoorkeeperEvent> doorkeeperEvents) {
+            return Observable.from(doorkeeperEvents);
+          }
+        })
+        .map(new Func1<DoorkeeperEvent, DoorkeeperIndexViewModel>() {
+          @Override public DoorkeeperIndexViewModel call(DoorkeeperEvent doorkeeperEvent) {
+            return new DoorkeeperIndexViewModel(doorkeeperEvent);
+          }
+        })
+        .filter(DoorkeeperIndexViewModel.filter(region, categories))
+        .toList();
   }
 
   class IndexAdapter extends RecyclerView.Adapter<BindableViewHolder> {

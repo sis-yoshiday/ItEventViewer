@@ -18,6 +18,7 @@ import org.iteventviewer.app.main.IndexFragment;
 import org.iteventviewer.common.LocalDateTimeConverter;
 import org.iteventviewer.service.atnd.AtndApi;
 import org.iteventviewer.service.compass.ConnpassApi;
+import org.iteventviewer.service.doorkeeper.DoorkeeperApi;
 import org.iteventviewer.service.qiita.QiitaApi;
 import org.iteventviewer.service.zusaar.ZusaarApi;
 import retrofit.RestAdapter;
@@ -96,6 +97,21 @@ import timber.log.Timber;
         .setConverter(new GsonConverter(gson))
         .build()
         .create(ZusaarApi.class);
+  }
+
+  @Provides @Singleton public DoorkeeperApi provideDoorkeeperApi(OkHttpClient httpClient) {
+
+    LocalDateTimeConverter localDateTimeConverter =
+        new LocalDateTimeConverter("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+    Gson gson =
+        new GsonBuilder().registerTypeAdapter(LocalDateTimeConverter.TYPE, localDateTimeConverter)
+            .create();
+
+    return createDefaultRestAdapterBuilder(httpClient).setEndpoint(DoorkeeperApi.ENDPOINT)
+        .setConverter(new GsonConverter(gson))
+        .build()
+        .create(DoorkeeperApi.class);
   }
 
   @Provides @Singleton public QiitaApi provideQiitaApi(OkHttpClient httpClient) {

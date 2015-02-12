@@ -59,6 +59,9 @@
   <!-- Zusaar -->
   <string name="zusaar">Zusaar</string>
 
+  <!-- Doorkeeper -->
+  <string name="doorkeeper">Doorkeeper</string>
+
   <!-- Qiitta -->
   <string name="qiita_token">170b632121d22fbe1a116faca7ea621ae34e2bac</string>
   

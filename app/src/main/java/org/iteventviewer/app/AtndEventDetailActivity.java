@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import com.gc.materialdesign.views.ButtonFlat;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +33,6 @@ import org.iteventviewer.util.SnsUtil;
 import rx.Observable;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.android.view.OnClickEvent;
-import rx.android.view.ViewObservable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.subscriptions.CompositeSubscription;
@@ -130,9 +127,10 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
                       }
                     });
 
-            // TODO 0件考慮
             // 参加者
-            adapter.addItem(AtndEventDetailViewModel.header(getString(R.string.status_accepted)));
+            adapter.addItem(AtndEventDetailViewModel.header(
+                new AtndEventDetailViewModel.Header(getString(R.string.status_accepted),
+                    event.getAccepted())));
             adapter.addItems(Lists.newArrayList(userObservable.filter(AtndUser.FILTER_ACCEPTED)
                 .toSortedList(AtndUser.NAME_COMPARATOR)
                 .flatMap(new Func1<List<AtndUser>, Observable<AtndUser>>() {
@@ -148,23 +146,24 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
                 .toBlocking()
                 .toIterable()));
 
-            // TODO 0件考慮
             // キャンセル待ち
-            adapter.addItem(AtndEventDetailViewModel.header(getString(R.string.status_waiting)));
+            adapter.addItem(AtndEventDetailViewModel.header(
+                new AtndEventDetailViewModel.Header(getString(R.string.status_waiting),
+                    event.getWaiting())));
             adapter.addItems(Lists.newArrayList(userObservable.filter(AtndUser.FILTER_WAITING)
-                .toSortedList(AtndUser.NAME_COMPARATOR)
-                .flatMap(new Func1<List<AtndUser>, Observable<AtndUser>>() {
-                  @Override public Observable<AtndUser> call(List<AtndUser> atndUsers) {
-                    return Observable.from(atndUsers);
-                  }
-                })
-                .map(new Func1<AtndUser, AtndEventDetailViewModel>() {
-                  @Override public AtndEventDetailViewModel call(AtndUser atndUser) {
-                    return AtndEventDetailViewModel.user(atndUser);
-                  }
-                })
-                .toBlocking()
-                .toIterable()));
+                    .toSortedList(AtndUser.NAME_COMPARATOR)
+                    .flatMap(new Func1<List<AtndUser>, Observable<AtndUser>>() {
+                      @Override public Observable<AtndUser> call(List<AtndUser> atndUsers) {
+                        return Observable.from(atndUsers);
+                      }
+                    })
+                    .map(new Func1<AtndUser, AtndEventDetailViewModel>() {
+                      @Override public AtndEventDetailViewModel call(AtndUser atndUser) {
+                        return AtndEventDetailViewModel.user(atndUser);
+                      }
+                    })
+                    .toBlocking()
+                    .toIterable()));
           }
         }, new Action1<Throwable>() {
           @Override public void call(Throwable throwable) {
@@ -232,6 +231,7 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
     class HeaderViewHolder extends BindableViewHolder {
 
       @InjectView(R.id.title) TextView title;
+      @InjectView(R.id.count) TextView count;
 
       public HeaderViewHolder(View itemView) {
         super(itemView);
@@ -240,7 +240,9 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
 
       @Override public void bind(int position) {
 
-        title.setText(getItem(position).getTitle());
+        AtndEventDetailViewModel.Header header = getItem(position).getHeader();
+        title.setText(header.getTitle());
+        count.setText(String.valueOf(header.getCount()));
       }
     }
 

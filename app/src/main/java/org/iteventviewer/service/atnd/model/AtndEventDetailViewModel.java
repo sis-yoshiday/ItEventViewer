@@ -17,7 +17,7 @@ public class AtndEventDetailViewModel {
 
   @Getter private int type;
 
-  @Getter private String title;
+  @Getter private Header header;
 
   @Getter private AtndEvent event;
 
@@ -27,10 +27,10 @@ public class AtndEventDetailViewModel {
     this.type = type;
   }
 
-  public static AtndEventDetailViewModel header(String title) {
+  public static AtndEventDetailViewModel header(Header header) {
 
     AtndEventDetailViewModel model = new AtndEventDetailViewModel(TYPE_HEADER);
-    model.title = title;
+    model.header = header;
     return model;
   }
 
@@ -46,5 +46,17 @@ public class AtndEventDetailViewModel {
     AtndEventDetailViewModel model = new AtndEventDetailViewModel(TYPE_MEMBER);
     model.user = user;
     return model;
+  }
+
+  @Getter
+  public static class Header {
+
+    private String title;
+    private int count;
+
+    public Header(String title, int count) {
+      this.title = title;
+      this.count = count;
+    }
   }
 }
