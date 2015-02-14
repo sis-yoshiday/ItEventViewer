@@ -1,5 +1,7 @@
 package org.iteventviewer.service.doorkeeper.json;
 
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import lombok.Getter;
@@ -8,8 +10,7 @@ import org.joda.time.LocalDateTime;
 /**
  * Created by yuki_yoshida on 15/02/13.
  */
-@Getter
-public class DoorkeeperEvent implements Serializable {
+@Getter public class DoorkeeperEvent implements Serializable {
 
   private static final long serialVersionUID = -276273757783627773L;
 
@@ -66,12 +67,12 @@ public class DoorkeeperEvent implements Serializable {
   /**
    * 緯度
    */
-  private Long lat;
+  private Double lat;
 
   /**
    * 経度
    */
-  @SerializedName("long") private Long lng;
+  @SerializedName("long") private Double lng;
 
   /**
    * 定員
@@ -97,4 +98,20 @@ public class DoorkeeperEvent implements Serializable {
    * 更新日時
    */
   @SerializedName("updated_at") private LocalDateTime updatedAt;
+
+  public @NonNull String getAddressAndPlaceString() {
+
+    StringBuilder builder = new StringBuilder();
+    boolean addressIsEmpty = TextUtils.isEmpty(address);
+    if (!addressIsEmpty) {
+      builder.append(address);
+    }
+    if (!TextUtils.isEmpty(venue)) {
+      if (!addressIsEmpty) {
+        builder.append(" ");
+      }
+      builder.append(venue);
+    }
+    return builder.toString();
+  }
 }

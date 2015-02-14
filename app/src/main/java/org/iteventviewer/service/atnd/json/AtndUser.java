@@ -1,7 +1,12 @@
 package org.iteventviewer.service.atnd.json;
 
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ClickableSpan;
 import com.google.gson.annotations.SerializedName;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.iteventviewer.app.R;
@@ -70,6 +75,26 @@ import rx.functions.Func2;
       builder.append(String.format("(@%s)", twitterId));
     }
     return builder.toString();
+  }
+
+  public SpannableString getNameSpannableString(ClickableSpan clickableSpan) {
+
+    String text = getNameString();
+
+    Pattern pattern = Pattern.compile("@" + twitterId);
+    Matcher matcher = pattern.matcher(text);
+
+    int start = 0;
+    int end = 0;
+    while (matcher.find()) {
+      start = matcher.start();
+      end = matcher.end();
+      break;
+    }
+
+    SpannableString ss = new SpannableString(text);
+    ss.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    return ss;
   }
 
   public int getStatusString() {

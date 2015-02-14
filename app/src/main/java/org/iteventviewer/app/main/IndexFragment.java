@@ -49,7 +49,7 @@ import org.iteventviewer.service.compass.json.ConnpassSearchResult;
 import org.iteventviewer.service.compass.model.ConnpassIndexViewModel;
 import org.iteventviewer.service.doorkeeper.DoorkeeperApi;
 import org.iteventviewer.service.doorkeeper.DoorkeeperEventSearchQuery;
-import org.iteventviewer.service.doorkeeper.json.DoorkeeperEvent;
+import org.iteventviewer.service.doorkeeper.json.DoorkeeperEventContainer;
 import org.iteventviewer.service.doorkeeper.model.DoorkeeperIndexViewModel;
 import org.iteventviewer.service.zusaar.ZusaarApi;
 import org.iteventviewer.service.zusaar.ZusaarEventSearchQuery;
@@ -219,11 +219,11 @@ public class IndexFragment extends BaseFragment {
 
     return atndApi.searchEvent(query)
         .flatMap(
-            new Func1<AtndSearchResult<AtndEvent>, Observable<AtndSearchResult.EventContainer<AtndEvent>>>() {
+            new Func1<AtndSearchResult, Observable<AtndSearchResult.EventContainer<AtndEvent>>>() {
 
               @Override public Observable<AtndSearchResult.EventContainer<AtndEvent>> call(
-                  AtndSearchResult<AtndEvent> atndEventAtndSearchResult) {
-                return Observable.from(atndEventAtndSearchResult.getEvents());
+                  AtndSearchResult searchResult) {
+                return Observable.from(searchResult.getEvents());
               }
             })
         .map(new Func1<AtndSearchResult.EventContainer<AtndEvent>, AtndIndexViewModel>() {
@@ -247,14 +247,13 @@ public class IndexFragment extends BaseFragment {
 
     return connpassApi.searchEvent(query)
         .flatMap(new Func1<ConnpassSearchResult, Observable<ConnpassEvent>>() {
-          @Override
-          public Observable<ConnpassEvent> call(ConnpassSearchResult connpassSearchResult) {
-            return Observable.from(connpassSearchResult.getEvents());
+          @Override public Observable<ConnpassEvent> call(ConnpassSearchResult searchResult) {
+            return Observable.from(searchResult.getEvents());
           }
         })
         .map(new Func1<ConnpassEvent, ConnpassIndexViewModel>() {
-          @Override public ConnpassIndexViewModel call(ConnpassEvent connpassEvent) {
-            return new ConnpassIndexViewModel(connpassEvent);
+          @Override public ConnpassIndexViewModel call(ConnpassEvent event) {
+            return new ConnpassIndexViewModel(event);
           }
         })
         .filter(ConnpassIndexViewModel.filter(region))
@@ -306,15 +305,15 @@ public class IndexFragment extends BaseFragment {
             .build();
 
     return doorkeeperApi.searchEvent(query)
-        .flatMap(new Func1<List<DoorkeeperEvent>, Observable<DoorkeeperEvent>>() {
-          @Override
-          public Observable<DoorkeeperEvent> call(List<DoorkeeperEvent> doorkeeperEvents) {
-            return Observable.from(doorkeeperEvents);
+        .flatMap(new Func1<List<DoorkeeperEventContainer>, Observable<DoorkeeperEventContainer>>() {
+          @Override public Observable<DoorkeeperEventContainer> call(
+              List<DoorkeeperEventContainer> searchResult) {
+            return Observable.from(searchResult);
           }
         })
-        .map(new Func1<DoorkeeperEvent, DoorkeeperIndexViewModel>() {
-          @Override public DoorkeeperIndexViewModel call(DoorkeeperEvent doorkeeperEvent) {
-            return new DoorkeeperIndexViewModel(doorkeeperEvent);
+        .map(new Func1<DoorkeeperEventContainer, DoorkeeperIndexViewModel>() {
+          @Override public DoorkeeperIndexViewModel call(DoorkeeperEventContainer eventContainer) {
+            return new DoorkeeperIndexViewModel(eventContainer.getEvent());
           }
         })
         .filter(DoorkeeperIndexViewModel.filter(region, categories))

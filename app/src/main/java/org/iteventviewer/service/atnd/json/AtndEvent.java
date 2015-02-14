@@ -1,20 +1,28 @@
 package org.iteventviewer.service.atnd.json;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.provider.CalendarContract;
+import android.support.annotation.NonNull;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.iteventviewer.app.R;
+import org.iteventviewer.util.GeoUtil;
 import org.iteventviewer.util.SnsUtil;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDateTime;
@@ -104,13 +112,36 @@ import org.joda.time.format.DateTimeFormat;
     return builder.toString();
   }
 
-  public boolean isEnded() {
-    LocalDateTime now = new LocalDateTime(DateTimeZone.getDefault());
-    if (endedAt != null) {
-      return now.compareTo(endedAt) > 0;
-    }
-    // NOTE : 適当だが開始日時の24時間後なら終了済みとする
-    return now.compareTo(startedAt.plus(Period.days(1))) > 0;
+  public SpannableString getEventDateSpannableString(final Context context) {
+
+    String text = getEventDateString();
+
+    SpannableString ss = new SpannableString(text);
+    ss.setSpan(new ClickableSpan() {
+      @Override public void onClick(View widget) {
+
+        // カレンダーアプリを呼び出すIntentの生成
+        Intent intent = new Intent(Intent.ACTION_INSERT, CalendarContract.Events.CONTENT_URI);
+        //スケジュールのタイトル
+        intent.putExtra(CalendarContract.Events.TITLE, title);
+        //スケジュールの開始時刻 ゼロで現在時刻
+        intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startedAt.toDate().getTime());
+        if (endedAt != null) {
+          //スケジュールの終了時刻　ゼロで現在時刻＋１時間
+          intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endedAt.toDate().getTime());
+        }
+        //スケジュールの場所
+        intent.putExtra(CalendarContract.Events.EVENT_LOCATION, String.format("%f,%f", lat, lng));
+        //スケジュールのアクセスレベル
+        intent.putExtra(CalendarContract.Events.ACCESS_LEVEL, CalendarContract.Events.ACCESS_DEFAULT);
+        //スケジュールの同時持ちの可否
+        intent.putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_FREE);
+        //Intentを呼び出す
+        context.startActivity(intent);
+      }
+    }, 0, text.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+
+    return ss;
   }
 
   public String getOwnerString() {
@@ -149,12 +180,20 @@ import org.joda.time.format.DateTimeFormat;
     return url;
   }
 
-  public String getAddressAndPlaceString() {
+  public @NonNull String getAddressAndPlaceString() {
 
-    if (TextUtils.isEmpty(place)) {
-      return address;
+    StringBuilder builder = new StringBuilder();
+    boolean addressIsEmpty = TextUtils.isEmpty(address);
+    if (!addressIsEmpty) {
+      builder.append(address);
     }
-    return address + " " + place;
+    if (!TextUtils.isEmpty(place)) {
+      if (!addressIsEmpty) {
+        builder.append(" ");
+      }
+      builder.append(place);
+    }
+    return builder.toString().isEmpty() ? "未設定" : builder.toString();
   }
 
   public SpannableString getAddressAndPlaceSpannableString(final Context context) {
@@ -165,8 +204,7 @@ import org.joda.time.format.DateTimeFormat;
     ss.setSpan(new ClickableSpan() {
       @Override public void onClick(View widget) {
 
-        context.startActivity(
-            new Intent(Intent.ACTION_VIEW, Uri.parse(String.format("geo:%f,%f", lat, lng))));
+        context.startActivity(GeoUtil.intent(lat, lng, 20, place));
       }
     }, 0, text.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 

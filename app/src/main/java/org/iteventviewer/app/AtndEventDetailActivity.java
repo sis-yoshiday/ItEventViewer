@@ -4,12 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -38,13 +37,9 @@ import rx.functions.Func1;
 import rx.subscriptions.CompositeSubscription;
 
 /**
- * TODO デザイン
- * TODO twitterへのリンク
  * TODO 100名以上参加者がいる場合のページネーション
  */
 public class AtndEventDetailActivity extends BaseEventDetailActivity {
-
-  public static final String EXTRA_EVENT = "event";
 
   @Inject AtndApi atndApi;
 
@@ -151,19 +146,19 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
                 new AtndEventDetailViewModel.Header(getString(R.string.status_waiting),
                     event.getWaiting())));
             adapter.addItems(Lists.newArrayList(userObservable.filter(AtndUser.FILTER_WAITING)
-                    .toSortedList(AtndUser.NAME_COMPARATOR)
-                    .flatMap(new Func1<List<AtndUser>, Observable<AtndUser>>() {
-                      @Override public Observable<AtndUser> call(List<AtndUser> atndUsers) {
-                        return Observable.from(atndUsers);
-                      }
-                    })
-                    .map(new Func1<AtndUser, AtndEventDetailViewModel>() {
-                      @Override public AtndEventDetailViewModel call(AtndUser atndUser) {
-                        return AtndEventDetailViewModel.user(atndUser);
-                      }
-                    })
-                    .toBlocking()
-                    .toIterable()));
+                .toSortedList(AtndUser.NAME_COMPARATOR)
+                .flatMap(new Func1<List<AtndUser>, Observable<AtndUser>>() {
+                  @Override public Observable<AtndUser> call(List<AtndUser> atndUsers) {
+                    return Observable.from(atndUsers);
+                  }
+                })
+                .map(new Func1<AtndUser, AtndEventDetailViewModel>() {
+                  @Override public AtndEventDetailViewModel call(AtndUser atndUser) {
+                    return AtndEventDetailViewModel.user(atndUser);
+                  }
+                })
+                .toBlocking()
+                .toIterable()));
           }
         }, new Action1<Throwable>() {
           @Override public void call(Throwable throwable) {
@@ -175,16 +170,6 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
   @Override protected void onDestroy() {
     subscription.unsubscribe();
     super.onDestroy();
-  }
-
-  @Override public boolean onOptionsItemSelected(MenuItem item) {
-
-    switch (item.getItemId()) {
-      case android.R.id.home:
-        NavUtils.navigateUpFromSameTask(this);
-        return true;
-    }
-    return super.onOptionsItemSelected(item);
   }
 
   class EventDetailAdapter
@@ -203,7 +188,7 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
         case AtndEventDetailViewModel.TYPE_HEADER:
           return inflater.inflate(R.layout.item_event_header, viewGroup, false);
         case AtndEventDetailViewModel.TYPE_DETAIL:
-          return inflater.inflate(R.layout.item_event_detail, viewGroup, false);
+          return inflater.inflate(R.layout.item_atnd_event_detail, viewGroup, false);
         case AtndEventDetailViewModel.TYPE_MEMBER:
           return inflater.inflate(R.layout.item_event_member, viewGroup, false);
         default:
@@ -277,7 +262,7 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
 
         // what
         title.setText(item.getTitle());
-        // FIXME 動作してない
+        owner.setMovementMethod(LinkMovementMethod.getInstance());
         owner.setText(item.getOwnerSpannableString(new ClickableSpan() {
           @Override public void onClick(View widget) {
 
@@ -292,8 +277,8 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
         refUrlText.setText(item.getRefUrlText(self));
 
         // when
-        // TODO カレンダーへのリンク
-        date.setText(item.getEventDateString());
+        date.setMovementMethod(LinkMovementMethod.getInstance());
+        date.setText(item.getEventDateSpannableString(self));
 
         // how
         if (item.hasLimit()) {
@@ -311,7 +296,7 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
 
         // where
         if (item.hasLocation()) {
-          // FIXME 動作してない
+          addressAndPlace.setMovementMethod(LinkMovementMethod.getInstance());
           addressAndPlace.setText(item.getAddressAndPlaceSpannableString(self));
         } else {
           addressAndPlace.setText(item.getAddressAndPlaceString());
@@ -332,7 +317,17 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
 
         final AtndUser item = getItem(position).getUser();
 
-        name.setText(item.getNameString());
+        if (item.hasTwitterId()) {
+          name.setMovementMethod(LinkMovementMethod.getInstance());
+          name.setText(item.getNameSpannableString(new ClickableSpan() {
+            @Override public void onClick(View widget) {
+              startActivity(new Intent(Intent.ACTION_VIEW,
+                  Uri.parse(SnsUtil.twitterUrlById(item.getTwitterId()))));
+            }
+          }));
+        } else {
+          name.setText(item.getNameString());
+        }
       }
     }
   }

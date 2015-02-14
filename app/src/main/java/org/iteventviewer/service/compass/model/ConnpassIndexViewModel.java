@@ -37,10 +37,7 @@ public class ConnpassIndexViewModel extends IndexViewModel {
         // NOTE : APIの制約により地域は取得後にフィルタする
         if (region != null) {
           for (String pref : region.getPrefs()) {
-            String address = indexViewModel.getEvent().getAddress();
-            if (TextUtils.isEmpty(address)) {
-              return false;
-            } else if (address.contains(pref)) {
+            if (indexViewModel.getEvent().getAddressAndPlaceString().contains(pref)) {
               return true;
             }
           }

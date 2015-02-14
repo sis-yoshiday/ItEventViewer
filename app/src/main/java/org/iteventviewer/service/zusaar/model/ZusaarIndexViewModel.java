@@ -37,7 +37,7 @@ public class ZusaarIndexViewModel extends IndexViewModel {
         // NOTE : APIの制約により地域は取得後にフィルタする
         if (region != null) {
           for (String pref : region.getPrefs()) {
-            if (indexViewModel.getEvent().getAddress().contains(pref)) {
+            if (indexViewModel.getEvent().getAddressAndPlaceString().contains(pref)) {
               return true;
             }
           }

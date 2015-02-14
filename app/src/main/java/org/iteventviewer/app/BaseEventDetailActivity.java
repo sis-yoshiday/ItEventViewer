@@ -9,6 +9,8 @@ import android.view.MenuItem;
  */
 public abstract class BaseEventDetailActivity extends ToolBarActivity {
 
+  protected static final String EXTRA_EVENT = "event";
+
   @Override public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.menu_event_detail, menu);
     return super.onCreateOptionsMenu(menu);
@@ -16,6 +18,9 @@ public abstract class BaseEventDetailActivity extends ToolBarActivity {
 
   @Override public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
+      case android.R.id.home:
+        finish();
+        return true;
       case R.id.action_share:
         Intent shareIntent = createShareIntent();
         if (shareIntent != null) {

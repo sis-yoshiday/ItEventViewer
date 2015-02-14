@@ -46,7 +46,7 @@ import rx.functions.Func1;
     // NOTE : APIの制約により地域は取得後にフィルタする
     if (region != null) {
       for (String pref : region.getPrefs()) {
-        if (event.getAddress().contains(pref)) {
+        if (event.getAddressAndPlaceString().contains(pref)) {
           return true;
         }
       }

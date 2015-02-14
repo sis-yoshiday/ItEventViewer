@@ -35,6 +35,7 @@ import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.functions.Action0;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -94,14 +95,19 @@ public class CategorySettingsFragment extends BaseFragment {
     // NOTE : 汎用的にタグを取得する方法がないため、"tags_for_api"ユーザを作成し手動で管理する
     subscription = AppObservable.bindFragment(this,
         qiitaApi.tags("Bearer " + getString(R.string.qiita_token), "tags_for_api", 1, 100))
+        .flatMap(new Func1<List<Tag>, Observable<Tag>>() {
+          @Override public Observable<Tag> call(List<Tag> tags) {
+            return Observable.from(tags);
+          }
+        })
+        .toSortedList(Tag.COMPARATOR_HOT)
         .subscribe(new Action1<List<Tag>>() {
           @Override public void call(List<Tag> tags) {
 
             recyclerView.setVisibility(View.VISIBLE);
             errorLayout.setVisibility(View.GONE);
 
-            adapter.setItems(
-                Observable.from(tags).toSortedList(Tag.COMPARATOR_HOT).toBlocking().first());
+            adapter.setItems(tags);
           }
         }, new Action1<Throwable>() {
           @Override public void call(Throwable throwable) {

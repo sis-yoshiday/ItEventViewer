@@ -1,5 +1,7 @@
 package org.iteventviewer.service.zusaar.json;
 
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import lombok.Getter;
@@ -87,12 +89,12 @@ import org.joda.time.format.DateTimeFormat;
   /**
    * 開催会場の緯度
    */
-  private double lat;
+  private Double lat;
 
   /**
    * 開催会場の経度
    */
-  @SerializedName("lon") private double lng;
+  @SerializedName("lon") private Double lng;
 
   /**
    * 管理者のID
@@ -136,6 +138,22 @@ import org.joda.time.format.DateTimeFormat;
       } else {
         builder.append(endedAt.toString(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm")));
       }
+    }
+    return builder.toString();
+  }
+
+  public @NonNull String getAddressAndPlaceString() {
+
+    StringBuilder builder = new StringBuilder();
+    boolean addressIsEmpty = TextUtils.isEmpty(address);
+    if (!addressIsEmpty) {
+      builder.append(address);
+    }
+    if (!TextUtils.isEmpty(place)) {
+      if (!addressIsEmpty) {
+        builder.append(" ");
+      }
+      builder.append(place);
     }
     return builder.toString();
   }
