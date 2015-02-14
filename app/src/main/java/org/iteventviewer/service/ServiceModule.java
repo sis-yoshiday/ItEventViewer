@@ -20,6 +20,7 @@ import org.iteventviewer.service.atnd.AtndApi;
 import org.iteventviewer.service.compass.ConnpassApi;
 import org.iteventviewer.service.doorkeeper.DoorkeeperApi;
 import org.iteventviewer.service.qiita.QiitaApi;
+import org.iteventviewer.service.zusaar.DoubleConverter;
 import org.iteventviewer.service.zusaar.ZusaarApi;
 import retrofit.RestAdapter;
 import retrofit.client.OkClient;
@@ -42,7 +43,7 @@ import timber.log.Timber;
   @Provides @Singleton public OkHttpClient provideOkHttpClientForApi() {
 
     OkHttpClient httpClient = new OkHttpClient();
-    httpClient.setConnectTimeout(3, TimeUnit.SECONDS);
+    httpClient.setConnectTimeout(10, TimeUnit.SECONDS);
     httpClient.setReadTimeout(3, TimeUnit.SECONDS);
     try {
       File cacheDir = new File(context.getCacheDir(), "http");
@@ -90,7 +91,10 @@ import timber.log.Timber;
         new LocalDateTimeConverter("yyyy-MM-dd'T'HH:mm:ssZ");
 
     Gson gson =
-        new GsonBuilder().registerTypeAdapter(LocalDateTimeConverter.TYPE, localDateTimeConverter)
+        new GsonBuilder()
+            .registerTypeAdapter(LocalDateTimeConverter.TYPE, localDateTimeConverter)
+            // NOTE : doubleに空文字が混じるので
+            .registerTypeAdapter(DoubleConverter.TYPE, new DoubleConverter())
             .create();
 
     return createDefaultRestAdapterBuilder(httpClient).setEndpoint(ZusaarApi.ENDPOINT)
@@ -127,6 +131,6 @@ import timber.log.Timber;
   private RestAdapter.Builder createDefaultRestAdapterBuilder(OkHttpClient httpClient) {
 
     return new RestAdapter.Builder().setClient(new OkClient(httpClient))
-        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE);
+        .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.HEADERS : RestAdapter.LogLevel.NONE);
   }
 }

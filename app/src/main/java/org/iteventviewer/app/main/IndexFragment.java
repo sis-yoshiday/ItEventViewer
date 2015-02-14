@@ -214,6 +214,7 @@ public class IndexFragment extends BaseFragment {
     // 検索クエリを生成
     Map<String, String> query = new AtndEventSearchQuery.Builder().addKeywordsOr(categories)
         .addYmds(30)
+        .start(1)
         .count(AtndEventSearchQuery.MAX_COUNT)
         .build();
 
@@ -223,6 +224,10 @@ public class IndexFragment extends BaseFragment {
 
               @Override public Observable<AtndSearchResult.EventContainer<AtndEvent>> call(
                   AtndSearchResult searchResult) {
+                if (searchResult.getResultsReturned() == AtndEventSearchQuery.MAX_COUNT) {
+                  // TODO 次の検索
+                  Timber.d("atnd query has next items");
+                }
                 return Observable.from(searchResult.getEvents());
               }
             })
@@ -242,12 +247,17 @@ public class IndexFragment extends BaseFragment {
     // 検索クエリを生成
     Map<String, String> query = new ConnpassEventSearchQuery.Builder().addKeywordsOr(categories)
         .addYmds(30)
+        .start(1)
         .count(ConnpassEventSearchQuery.MAX_COUNT)
         .build();
 
     return connpassApi.searchEvent(query)
         .flatMap(new Func1<ConnpassSearchResult, Observable<ConnpassEvent>>() {
           @Override public Observable<ConnpassEvent> call(ConnpassSearchResult searchResult) {
+            if (searchResult.getResultsReturned() == ConnpassEventSearchQuery.MAX_COUNT) {
+              // TODO 次の検索
+              Timber.d("connpass query has next items");
+            }
             return Observable.from(searchResult.getEvents());
           }
         })
@@ -263,6 +273,7 @@ public class IndexFragment extends BaseFragment {
   private Observable<List<ZusaarIndexViewModel>> searchZusaar(@Nullable final Region region,
       Set<String> categories) {
 
+    // FIXME クエリで検索しない
     // NOTE : Zusaarのkeyword, keyword_orはcase-sensitiveなので1文字目を大文字にしたやつとかを無理やり入れる
     Set<String> newCategories = Sets.newHashSet(
         Observable.from(categories).flatMap(new Func1<String, Observable<String>>() {
@@ -276,13 +287,18 @@ public class IndexFragment extends BaseFragment {
     // 検索クエリを生成
     Map<String, String> query = new ZusaarEventSearchQuery.Builder().addKeywordsOr(newCategories)
         .addYmds(30)
+        .start(1)
         .count(ZusaarEventSearchQuery.MAX_COUNT)
         .build();
 
     return zusaarApi.searchEvent(query)
         .flatMap(new Func1<ZusaarSearchResult, Observable<ZusaarEvent>>() {
-          @Override public Observable<ZusaarEvent> call(ZusaarSearchResult zusaarSearchResult) {
-            return Observable.from(zusaarSearchResult.getEvents());
+          @Override public Observable<ZusaarEvent> call(ZusaarSearchResult searchResult) {
+            if (searchResult.getResultsReturned() == ZusaarEventSearchQuery.MAX_COUNT) {
+              // TODO 次の検索
+              Timber.d("zusaar query has next items");
+            }
+            return Observable.from(searchResult.getEvents());
           }
         })
         .map(new Func1<ZusaarEvent, ZusaarIndexViewModel>() {

@@ -88,6 +88,7 @@ import org.joda.time.format.DateTimeFormat;
 
   /**
    * 開催会場の緯度
+   * NOTE : 文字列が混じってる時があるので一旦Stringでシリアライズする
    */
   private Double lat;
 
@@ -99,7 +100,7 @@ import org.joda.time.format.DateTimeFormat;
   /**
    * 管理者のID
    */
-  @SerializedName("owner_id") private int ownerId;
+  @SerializedName("owner_id") private String ownerId;
 
   /**
    * 管理者のプロフィールURL
