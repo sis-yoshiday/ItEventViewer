@@ -1,6 +1,8 @@
 package org.iteventviewer.app.main;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,6 +24,8 @@ import org.iteventviewer.common.OnItemClickListener;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.model.Setting;
 import org.iteventviewer.util.SettingsUtil;
+import rx.Observable;
+import rx.functions.Action1;
 
 /**
  * Created by yuki_yoshida on 15/01/24.
@@ -46,9 +50,14 @@ public class SettingsFragment extends BaseFragment {
         new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
 
     adapter = new SettingsAdapter(getActivity());
-    // TODO 好きに変えて
-    adapter.setItems(SettingsUtil.load());
     recyclerView.setAdapter(adapter);
+
+    Observable<Setting> settingStream = SettingsUtil.stream();
+    settingStream.subscribe(new Action1<Setting>() {
+      @Override public void call(Setting setting) {
+        adapter.addItem(setting);
+      }
+    });
 
     adapter.setOnItemClickListener(new OnItemClickListener() {
       @Override public void onItemClick(View itemView, int position) {
@@ -61,6 +70,9 @@ public class SettingsFragment extends BaseFragment {
           case R.string.setting_privacy_policy:
             // TODO
             Toast.makeText(getActivity(), item.getTitleResId(), Toast.LENGTH_SHORT).show();
+            break;
+          case R.string.setting_do_review:
+            toPlayStore();
             break;
           case R.string.setting_software_licences:
             LicenseActivity.launch(getActivity());
@@ -78,6 +90,20 @@ public class SettingsFragment extends BaseFragment {
   @Override public void onDestroyView() {
     ButterKnife.reset(this);
     super.onDestroyView();
+  }
+
+  private void toPlayStore() {
+
+    String appPackageName = getActivity().getPackageName();
+    try {
+      view("market://details?id=" + appPackageName);
+    } catch (android.content.ActivityNotFoundException anfe) {
+      view("http://play.google.com/store/apps/details?id=" + appPackageName);
+    }
+  }
+
+  private void view(String url) {
+    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
   }
 
   class SettingsAdapter extends SimpleRecyclerAdapter<Setting, BindableViewHolder> {

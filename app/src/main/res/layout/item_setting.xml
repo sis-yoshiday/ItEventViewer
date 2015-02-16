@@ -6,5 +6,5 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:padding="@dimen/space_lg"
-    android:textColor="@color/colorTextPrimary"
+    android:background="@drawable/default_selector"
     tools:text="@string/setting_software_licences"/>

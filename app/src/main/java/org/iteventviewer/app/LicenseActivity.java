@@ -53,6 +53,10 @@ public class LicenseActivity extends ToolBarActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    recyclerView.setPadding(recyclerView.getPaddingLeft(),
+        recyclerView.getPaddingTop() + getResources().getDimensionPixelSize(R.dimen.space_sm),
+        recyclerView.getPaddingRight(), recyclerView.getPaddingBottom());
+
     recyclerView.setLayoutManager(
         new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 

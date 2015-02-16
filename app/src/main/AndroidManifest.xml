@@ -21,6 +21,9 @@
       </intent-filter>
     </activity>
     <activity
+        android:name=".LicenseActivity"
+        android:label="@string/setting_software_licences"/>
+    <activity
         android:name=".AtndEventDetailActivity"/>
     <activity
         android:name=".ConnpassEventDetailActivity"/>

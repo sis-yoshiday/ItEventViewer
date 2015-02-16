@@ -11,6 +11,7 @@
       android:paddingTop="?attr/actionBarSize"
       android:paddingLeft="@dimen/space_sm"
       android:paddingRight="@dimen/space_sm"
+      android:paddingBottom="@dimen/space_sm"
       android:clipToPadding="false"/>
 
   <include
