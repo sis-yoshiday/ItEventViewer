@@ -14,12 +14,13 @@ import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import org.iteventviewer.app.BaseFragment;
-import org.iteventviewer.util.SettingsUtil;
+import org.iteventviewer.app.R;
+import org.iteventviewer.app.TestActivity;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.OnItemClickListener;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.model.Setting;
-import org.iteventviewer.app.R;
+import org.iteventviewer.util.SettingsUtil;
 
 /**
  * Created by yuki_yoshida on 15/01/24.
@@ -64,6 +65,9 @@ public class SettingsFragment extends BaseFragment {
             // TODO
             Toast.makeText(getActivity(), item.getTitleResId(), Toast.LENGTH_SHORT).show();
             break;
+          case R.string.setting_test:
+            TestActivity.launch(getActivity());
+            break;
         }
       }
     });
@@ -91,23 +95,13 @@ public class SettingsFragment extends BaseFragment {
       return getItem(position).getType();
     }
 
-    @Override protected View newView(ViewGroup viewGroup, int viewType) {
+    @Override public BindableViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
       switch (viewType) {
         case Setting.TYPE_NORMAL:
-          return inflater.inflate(R.layout.item_setting, viewGroup, false);
+          return new NormalViewHolder(inflater.inflate(R.layout.item_setting, parent, false));
         case Setting.TYPE_CHECKBOX:
-          return inflater.inflate(R.layout.item_setting_checkbox, viewGroup, false);
-        default:
-          throw new IllegalArgumentException("viewType");
-      }
-    }
-
-    @Override protected BindableViewHolder newViewHolder(View view, int viewType) {
-      switch (viewType) {
-        case Setting.TYPE_NORMAL:
-          return new NormalViewHolder(view);
-        case Setting.TYPE_CHECKBOX:
-          return new CheckboxViewHolder(view);
+          return new CheckboxViewHolder(
+              inflater.inflate(R.layout.item_setting_checkbox, parent, false));
         default:
           throw new IllegalArgumentException("viewType");
       }

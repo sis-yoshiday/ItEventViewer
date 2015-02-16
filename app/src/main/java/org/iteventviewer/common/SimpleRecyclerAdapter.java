@@ -3,13 +3,10 @@ package org.iteventviewer.common;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Setter;
 import rx.Observable;
-import rx.functions.Func1;
 
 /**
  * Created by yuki_yoshida on 15/01/20.
@@ -23,8 +20,7 @@ public abstract class SimpleRecyclerAdapter<T, VH extends RecyclerView.ViewHolde
 
   protected List<T> items;
 
-  @Setter
-  protected OnItemClickListener onItemClickListener;
+  @Setter protected OnItemClickListener onItemClickListener;
 
   public SimpleRecyclerAdapter(Context context) {
     this(context, new ArrayList<T>());
@@ -34,17 +30,6 @@ public abstract class SimpleRecyclerAdapter<T, VH extends RecyclerView.ViewHolde
     this.context = context;
     inflater = LayoutInflater.from(context);
     this.items = items;
-  }
-
-  protected abstract View newView(ViewGroup viewGroup, int viewType);
-
-  protected abstract VH newViewHolder(View view, int viewType);
-
-  @Override public VH onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-
-    View view = newView(viewGroup, viewType);
-    VH viewHolder = newViewHolder(view, viewType);
-    return viewHolder;
   }
 
   @Override public int getItemCount() {

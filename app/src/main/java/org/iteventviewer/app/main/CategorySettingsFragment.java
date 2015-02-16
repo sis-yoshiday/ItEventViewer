@@ -25,11 +25,11 @@ import jp.yokomark.widget.compound.OnCheckedChangeListener;
 import org.iteventviewer.app.BaseFragment;
 import org.iteventviewer.app.MyApplication;
 import org.iteventviewer.app.R;
-import org.iteventviewer.util.PreferenceUtil;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.service.qiita.QiitaApi;
 import org.iteventviewer.service.qiita.json.Tag;
+import org.iteventviewer.util.PreferenceUtil;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.app.AppObservable;
@@ -133,12 +133,8 @@ public class CategorySettingsFragment extends BaseFragment {
       MyApplication.get(context).inject(this);
     }
 
-    @Override protected View newView(ViewGroup viewGroup, int viewType) {
-      return inflater.inflate(R.layout.item_tag, viewGroup, false);
-    }
-
-    @Override protected BindableViewHolder newViewHolder(View view, int viewType) {
-      return new ViewHolder(view);
+    @Override public BindableViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+      return new ViewHolder(inflater.inflate(R.layout.item_tag, parent, false));
     }
 
     @Override public void onBindViewHolder(BindableViewHolder holder, int position) {

@@ -24,6 +24,9 @@
         android:name=".AtndEventDetailActivity"/>
     <activity
         android:name=".ConnpassEventDetailActivity"/>
+
+    <!-- test -->
+    <activity android:name=".TestActivity"/>
   </application>
 
 </manifest>

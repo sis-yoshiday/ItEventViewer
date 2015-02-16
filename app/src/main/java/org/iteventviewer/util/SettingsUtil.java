@@ -15,6 +15,7 @@ public class SettingsUtil {
     settings.add(new Setting(Setting.TYPE_CHECKBOX, R.string.setting_checkbox));
     settings.add(new Setting(Setting.TYPE_NORMAL, R.string.setting_privacy_policy));
     settings.add(new Setting(Setting.TYPE_NORMAL, R.string.setting_software_licences));
+    settings.add(new Setting(Setting.TYPE_NORMAL, R.string.setting_test));
     return settings;
   }
 }

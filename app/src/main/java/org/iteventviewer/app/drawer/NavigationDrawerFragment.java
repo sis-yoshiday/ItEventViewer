@@ -38,9 +38,9 @@ import icepick.Icicle;
 import java.util.List;
 import jp.yokomark.widget.compound.CompoundFrameLayout;
 import org.iteventviewer.app.R;
-import org.iteventviewer.util.MenuUtils;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.model.DrawerMenu;
+import org.iteventviewer.util.MenuUtils;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.app.AppObservable;
@@ -115,8 +115,8 @@ public class NavigationDrawerFragment extends Fragment {
     adapter = new NavigationDrawerAdapter(getActivity(), MenuUtils.createDrawerMenu());
     recyclerView.setAdapter(adapter);
 
-    subscription = AppObservable.bindFragment(this, observable())
-        .subscribe(new Action1<SelectMenuEvent>() {
+    subscription =
+        AppObservable.bindFragment(this, observable()).subscribe(new Action1<SelectMenuEvent>() {
           @Override public void call(SelectMenuEvent selectMenuEvent) {
             closeDrawer();
           }
@@ -222,12 +222,8 @@ public class NavigationDrawerFragment extends Fragment {
       super(context, items);
     }
 
-    @Override protected View newView(ViewGroup viewGroup, int viewType) {
-      return inflater.inflate(R.layout.item_drawer, viewGroup, false);
-    }
-
-    @Override protected ViewHolder newViewHolder(View view, int viewType) {
-      return new ViewHolder(view);
+    @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+      return new ViewHolder(inflater.inflate(R.layout.item_drawer, parent, false));
     }
 
     @Override public void onBindViewHolder(final ViewHolder vh, final int position) {

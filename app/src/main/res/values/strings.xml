@@ -44,6 +44,7 @@
   <string name="setting_privacy_policy">privacy policy</string>
   <string name="setting_software_licences">software licences</string>
   <string name="setting_checkbox">check setting</string>
+  <string name="setting_test">test activity</string>
 
   <!-- sns -->
   <string name="twitter">twitter</string>

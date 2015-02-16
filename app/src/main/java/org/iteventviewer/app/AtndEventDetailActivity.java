@@ -183,27 +183,15 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
       return getItem(position).getType();
     }
 
-    @Override protected View newView(ViewGroup viewGroup, int viewType) {
+    @Override public BindableViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
       switch (viewType) {
         case AtndEventDetailViewModel.TYPE_HEADER:
-          return inflater.inflate(R.layout.item_event_header, viewGroup, false);
+          return new HeaderViewHolder(inflater.inflate(R.layout.item_event_header, parent, false));
         case AtndEventDetailViewModel.TYPE_DETAIL:
-          return inflater.inflate(R.layout.item_atnd_event_detail, viewGroup, false);
+          return new DetailViewHolder(
+              inflater.inflate(R.layout.item_atnd_event_detail, parent, false));
         case AtndEventDetailViewModel.TYPE_MEMBER:
-          return inflater.inflate(R.layout.item_event_member, viewGroup, false);
-        default:
-          throw new IllegalArgumentException("viewType");
-      }
-    }
-
-    @Override protected BindableViewHolder newViewHolder(View view, int viewType) {
-      switch (viewType) {
-        case AtndEventDetailViewModel.TYPE_HEADER:
-          return new HeaderViewHolder(view);
-        case AtndEventDetailViewModel.TYPE_DETAIL:
-          return new DetailViewHolder(view);
-        case AtndEventDetailViewModel.TYPE_MEMBER:
-          return new MemberViewHolder(view);
+          return new MemberViewHolder(inflater.inflate(R.layout.item_event_member, parent, false));
         default:
           throw new IllegalArgumentException("viewType");
       }

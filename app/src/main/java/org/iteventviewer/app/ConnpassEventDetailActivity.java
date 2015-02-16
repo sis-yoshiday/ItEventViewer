@@ -2,29 +2,20 @@ package org.iteventviewer.app;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import com.gc.materialdesign.views.ButtonFlat;
 import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.SimpleRecyclerAdapter;
-import org.iteventviewer.service.atnd.json.AtndEvent;
-import org.iteventviewer.service.atnd.model.AtndEventDetailViewModel;
 import org.iteventviewer.service.compass.json.ConnpassEvent;
 import org.iteventviewer.service.compass.model.ConnpassEventDetailViewModel;
-import org.iteventviewer.util.SnsUtil;
 import rx.Subscription;
 import rx.subscriptions.Subscriptions;
 
@@ -97,19 +88,11 @@ public class ConnpassEventDetailActivity extends BaseEventDetailActivity {
       return getItem(position).getType();
     }
 
-    @Override protected View newView(ViewGroup viewGroup, int viewType) {
+    @Override public BindableViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
       switch (viewType) {
         case ConnpassEventDetailViewModel.TYPE_DETAIL:
-          return inflater.inflate(R.layout.item_connpass_event_detail, viewGroup, false);
-        default:
-          throw new IllegalArgumentException("viewType");
-      }
-    }
-
-    @Override protected BindableViewHolder newViewHolder(View view, int viewType) {
-      switch (viewType) {
-        case ConnpassEventDetailViewModel.TYPE_DETAIL:
-          return new DetailViewHolder(view);
+          return new DetailViewHolder(
+              inflater.inflate(R.layout.item_connpass_event_detail, parent, false));
         default:
           throw new IllegalArgumentException("viewType");
       }
