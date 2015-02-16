@@ -14,6 +14,7 @@ import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import org.iteventviewer.app.BaseFragment;
+import org.iteventviewer.app.LicenseActivity;
 import org.iteventviewer.app.R;
 import org.iteventviewer.app.TestActivity;
 import org.iteventviewer.common.BindableViewHolder;
@@ -62,8 +63,7 @@ public class SettingsFragment extends BaseFragment {
             Toast.makeText(getActivity(), item.getTitleResId(), Toast.LENGTH_SHORT).show();
             break;
           case R.string.setting_software_licences:
-            // TODO
-            Toast.makeText(getActivity(), item.getTitleResId(), Toast.LENGTH_SHORT).show();
+            LicenseActivity.launch(getActivity());
             break;
           case R.string.setting_test:
             TestActivity.launch(getActivity());

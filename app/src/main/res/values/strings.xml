@@ -41,9 +41,10 @@
   <string name="msg_error_tag_list">タグ一覧の取得に失敗しました</string>
 
   <!-- settings -->
-  <string name="setting_privacy_policy">privacy policy</string>
-  <string name="setting_software_licences">software licences</string>
   <string name="setting_checkbox">check setting</string>
+  <string name="setting_privacy_policy">プライバシーポリシー</string>
+  <string name="setting_do_review">レビューしてあげる</string>
+  <string name="setting_software_licences">ソフトウェアライセンス</string>
   <string name="setting_test">test activity</string>
 
   <!-- sns -->
