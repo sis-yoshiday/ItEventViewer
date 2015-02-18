@@ -17,7 +17,9 @@ import org.iteventviewer.app.main.CategorySettingsFragment;
 import org.iteventviewer.app.main.IndexFragment;
 import org.iteventviewer.common.LocalDateTimeConverter;
 import org.iteventviewer.service.atnd.AtndApi;
+import org.iteventviewer.service.atnd.AtndService;
 import org.iteventviewer.service.compass.ConnpassApi;
+import org.iteventviewer.service.compass.ConnpassService;
 import org.iteventviewer.service.doorkeeper.DoorkeeperApi;
 import org.iteventviewer.service.qiita.QiitaApi;
 import org.iteventviewer.service.zusaar.DoubleConverter;
@@ -70,6 +72,10 @@ import timber.log.Timber;
         .create(AtndApi.class);
   }
 
+  @Provides public AtndService provideAtndService(AtndApi atndApi) {
+    return new AtndService(atndApi);
+  }
+
   @Provides @Singleton public ConnpassApi provideConpassApi(OkHttpClient httpClient) {
 
     LocalDateTimeConverter localDateTimeConverter =
@@ -83,6 +89,10 @@ import timber.log.Timber;
         .setConverter(new GsonConverter(gson))
         .build()
         .create(ConnpassApi.class);
+  }
+
+  @Provides public ConnpassService provideConnpassService(ConnpassApi connpassApi) {
+    return new ConnpassService(connpassApi);
   }
 
   @Provides @Singleton public ZusaarApi provideZusaarApi(OkHttpClient httpClient) {

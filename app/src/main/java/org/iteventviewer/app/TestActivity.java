@@ -14,6 +14,7 @@ import butterknife.InjectView;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
+import org.iteventviewer.common.SimpleRecyclerAdapter;
 import org.iteventviewer.service.ServiceModule;
 import org.iteventviewer.service.atnd.AtndService;
 import org.iteventviewer.service.atnd.model.AtndIndexViewModel;
@@ -33,8 +34,6 @@ public class TestActivity extends ToolBarActivity {
 
   MyAdapter adapter;
 
-  AtndService atndService;
-
   private CompositeSubscription subscription = new CompositeSubscription();
 
   public static void launch(Context context) {
@@ -52,39 +51,12 @@ public class TestActivity extends ToolBarActivity {
     recyclerView.setLayoutManager(
         new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
-    adapter = new MyAdapter();
+    adapter = new MyAdapter(this);
     recyclerView.setAdapter(adapter);
 
-    ServiceModule module = new ServiceModule(this);
-    atndService = new AtndService(module.provideAtndApi(module.provideOkHttpClientForApi()), 10);
-
-    Observable<List<AtndIndexViewModel>> initialStream =
-        atndService.search(null, Sets.newHashSet("Android"), 1);
-
-    subscription.add(AppObservable.bindActivity(this, initialStream)
-        .subscribeOn(AndroidSchedulers.mainThread())
-        .subscribe(adapter.subscriber));
-
-    atndService.nextSearchStream().subscribe(new Action1<Observable<List<AtndIndexViewModel>>>() {
-      @Override public void call(final Observable<List<AtndIndexViewModel>> listObservable) {
-
-        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
-          @Override public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-
-            LinearLayoutManager llm = (LinearLayoutManager) recyclerView.getLayoutManager();
-
-            if (llm.findLastVisibleItemPosition() == adapter.getItemCount() - 1) {
-
-              subscription.add(AppObservable.bindActivity(self, listObservable)
-                  .subscribeOn(AndroidSchedulers.mainThread())
-                  .subscribe(adapter.subscriber));
-
-              recyclerView.setOnScrollListener(null);
-            }
-          }
-        });
-      }
-    });
+    for (int i = 1; i <= 100; i++) {
+      adapter.addItem(i);
+    }
   }
 
   @Override protected void onDestroy() {
@@ -92,35 +64,10 @@ public class TestActivity extends ToolBarActivity {
     super.onDestroy();
   }
 
-  class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+  class MyAdapter extends SimpleRecyclerAdapter<Integer, MyAdapter.ViewHolder> {
 
-    private List<AtndIndexViewModel> items;
-
-    Subscriber<List<AtndIndexViewModel>> subscriber = new Subscriber<List<AtndIndexViewModel>>() {
-      @Override public void onCompleted() {
-
-      }
-
-      @Override public void onError(Throwable e) {
-
-      }
-
-      @Override public void onNext(List<AtndIndexViewModel> models) {
-        addItems(models);
-        notifyDataSetChanged();
-      }
-    };
-
-    public MyAdapter() {
-      items = new ArrayList<>();
-    }
-
-    public AtndIndexViewModel getItem(int position) {
-      return items.get(position);
-    }
-
-    public void addItems(List<AtndIndexViewModel> items) {
-      this.items.addAll(items);
+    public MyAdapter(Context context) {
+      super(context);
     }
 
     @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -130,7 +77,26 @@ public class TestActivity extends ToolBarActivity {
     }
 
     @Override public void onBindViewHolder(ViewHolder holder, int position) {
-      holder.title.setText(getItem(position).getEvent().getTitle());
+      String title;
+      switch (getItem(position) % 15) {
+        case 0:
+          title = "Fizz Buzz";
+          break;
+        case 3:
+        case 6:
+        case 9:
+        case 12:
+          title = "Fizz";
+          break;
+        case 5:
+        case 10:
+          title = "Buzz";
+          break;
+        default:
+          title = String.valueOf(getItem(position));
+          break;
+      }
+      holder.title.setText(title);
     }
 
     @Override public int getItemCount() {

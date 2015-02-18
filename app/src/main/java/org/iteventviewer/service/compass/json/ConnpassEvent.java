@@ -1,5 +1,6 @@
 package org.iteventviewer.service.compass.json;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.CalendarContract;
@@ -230,7 +231,11 @@ import org.joda.time.format.DateTimeFormat;
     ss.setSpan(new ClickableSpan() {
       @Override public void onClick(View widget) {
 
-        context.startActivity(GeoUtil.intent(lat, lng, 20, place));
+        try {
+          context.startActivity(GeoUtil.intent(lat, lng, 20, place));
+        } catch (ActivityNotFoundException e) {
+          // FIXME fallback to web
+        }
       }
     }, 0, text.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 

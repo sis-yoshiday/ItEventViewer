@@ -6,7 +6,6 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +18,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import org.iteventviewer.common.DividerItemDecoration;
+import org.iteventviewer.common.SimpleRecyclerAdapter;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -60,14 +59,13 @@ public class LicenseActivity extends ToolBarActivity {
     recyclerView.setLayoutManager(
         new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
-    adapter = new LicenseAdapter();
+    adapter = new LicenseAdapter(this);
     recyclerView.setAdapter(adapter);
 
     recyclerView.addItemDecoration(
         new DividerItemDecoration(getResources().getDrawable(R.drawable.divider_sm_tranpaent)));
 
-    Observable<String> licenseTextStream =
-        licenseTextStream(getAssets(), "licenses", 8 * 1024, Charsets.UTF_8);
+    Observable<String> licenseTextStream = licenseTextStream(getAssets());
 
     subscription = AppObservable.bindActivity(this, licenseTextStream)
         .subscribeOn(AndroidSchedulers.mainThread())
@@ -99,23 +97,22 @@ public class LicenseActivity extends ToolBarActivity {
     return super.onOptionsItemSelected(item);
   }
 
-  private static Observable<String> licenseTextStream(final AssetManager assetManager,
-      final String path, final int bufSize, final Charset charset) {
+  private static Observable<String> licenseTextStream(final AssetManager assetManager) {
     return Observable.create(new Observable.OnSubscribe<String>() {
 
       @Override public void call(Subscriber<? super String> subscriber) {
 
         BufferedReader reader = null;
         try {
-          String[] fileNames = assetManager.list(path);
+          String[] fileNames = assetManager.list("licenses");
 
           for (String fileName : fileNames) {
-            InputStream is = assetManager.open(path + "/" + fileName);
+            InputStream is = assetManager.open("licenses/" + fileName);
 
-            reader = new BufferedReader(new InputStreamReader(is, charset));
+            reader = new BufferedReader(new InputStreamReader(is, Charsets.UTF_8));
 
             StringBuilder builder = new StringBuilder();
-            char[] charBuffer = new char[bufSize];
+            char[] charBuffer = new char[8 * 1024];
             int r;
             while ((r = reader.read(charBuffer)) != -1) {
               builder.append(charBuffer, 0, r);
@@ -132,11 +129,12 @@ public class LicenseActivity extends ToolBarActivity {
     }).observeOn(Schedulers.io());
   }
 
-  class LicenseAdapter extends RecyclerView.Adapter<LicenseAdapter.ViewHolder> {
+  class LicenseAdapter extends SimpleRecyclerAdapter<String, LicenseAdapter.ViewHolder> {
 
     private List<String> items;
 
-    public LicenseAdapter() {
+    public LicenseAdapter(Context context) {
+      super(context);
       items = new ArrayList<>();
     }
 
@@ -150,8 +148,7 @@ public class LicenseActivity extends ToolBarActivity {
     }
 
     @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-      return new ViewHolder(
-          LayoutInflater.from(LicenseActivity.this).inflate(R.layout.item_license, parent, false));
+      return new ViewHolder(inflater.inflate(R.layout.item_license, parent, false));
     }
 
     @Override public void onBindViewHolder(ViewHolder holder, int position) {

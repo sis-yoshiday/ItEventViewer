@@ -37,15 +37,9 @@ import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.ClickableViewHolder;
 import org.iteventviewer.common.OnItemClickListener;
 import org.iteventviewer.model.IndexViewModel;
-import org.iteventviewer.service.atnd.AtndApi;
-import org.iteventviewer.service.atnd.AtndEventSearchQuery;
-import org.iteventviewer.service.atnd.json.AtndEvent;
-import org.iteventviewer.service.atnd.json.AtndSearchResult;
+import org.iteventviewer.service.atnd.AtndService;
 import org.iteventviewer.service.atnd.model.AtndIndexViewModel;
-import org.iteventviewer.service.compass.ConnpassApi;
-import org.iteventviewer.service.compass.ConnpassEventSearchQuery;
-import org.iteventviewer.service.compass.json.ConnpassEvent;
-import org.iteventviewer.service.compass.json.ConnpassSearchResult;
+import org.iteventviewer.service.compass.ConnpassService;
 import org.iteventviewer.service.compass.model.ConnpassIndexViewModel;
 import org.iteventviewer.service.doorkeeper.DoorkeeperApi;
 import org.iteventviewer.service.doorkeeper.DoorkeeperEventSearchQuery;
@@ -75,8 +69,8 @@ import timber.log.Timber;
  */
 public class IndexFragment extends BaseFragment {
 
-  @Inject AtndApi atndApi;
-  @Inject ConnpassApi connpassApi;
+  @Inject AtndService atndService;
+  @Inject ConnpassService connpassService;
   @Inject ZusaarApi zusaarApi;
   @Inject DoorkeeperApi doorkeeperApi;
 
@@ -159,9 +153,9 @@ public class IndexFragment extends BaseFragment {
 
   private void search(Region region, Set<String> categories) {
 
-    Observable<List<AtndIndexViewModel>> atndResultStream = searchAtnd(region, categories);
-    Observable<List<ConnpassIndexViewModel>> connpassResultStream =
-        searchConnpass(region, categories);
+    Observable<List<AtndIndexViewModel>> atndResultStream = atndService.search(region, categories);
+    Observable<List<ConnpassIndexViewModel>> connpassResultStream = connpassService.
+        search(region, categories);
     // Zusaar (現状APIとして使い物にならない)
     Observable<List<ZusaarIndexViewModel>> zusaarResultStream = searchZusaar(region, categories);
     Observable<List<DoorkeeperIndexViewModel>> doorKeeperResultStream =
@@ -206,68 +200,6 @@ public class IndexFragment extends BaseFragment {
             progressBar.setVisibility(View.GONE);
           }
         }));
-  }
-
-  private Observable<List<AtndIndexViewModel>> searchAtnd(@Nullable final Region region,
-      Set<String> categories) {
-
-    // 検索クエリを生成
-    Map<String, String> query = new AtndEventSearchQuery.Builder().addKeywordsOr(categories)
-        .addYmds(30)
-        .start(1)
-        .count(AtndEventSearchQuery.MAX_COUNT)
-        .build();
-
-    return atndApi.searchEvent(query)
-        .flatMap(
-            new Func1<AtndSearchResult, Observable<AtndSearchResult.EventContainer<AtndEvent>>>() {
-
-              @Override public Observable<AtndSearchResult.EventContainer<AtndEvent>> call(
-                  AtndSearchResult searchResult) {
-                if (searchResult.getResultsReturned() == AtndEventSearchQuery.MAX_COUNT) {
-                  // TODO 次の検索
-                  Timber.d("atnd query has next items");
-                }
-                return Observable.from(searchResult.getEvents());
-              }
-            })
-        .map(new Func1<AtndSearchResult.EventContainer<AtndEvent>, AtndIndexViewModel>() {
-          @Override public AtndIndexViewModel call(
-              AtndSearchResult.EventContainer<AtndEvent> eventContainer) {
-            return new AtndIndexViewModel(eventContainer.getEvent());
-          }
-        })
-        .filter(AtndIndexViewModel.filter(region))
-        .toList();
-  }
-
-  private Observable<List<ConnpassIndexViewModel>> searchConnpass(@Nullable final Region region,
-      Set<String> categories) {
-
-    // 検索クエリを生成
-    Map<String, String> query = new ConnpassEventSearchQuery.Builder().addKeywordsOr(categories)
-        .addYmds(30)
-        .start(1)
-        .count(ConnpassEventSearchQuery.MAX_COUNT)
-        .build();
-
-    return connpassApi.searchEvent(query)
-        .flatMap(new Func1<ConnpassSearchResult, Observable<ConnpassEvent>>() {
-          @Override public Observable<ConnpassEvent> call(ConnpassSearchResult searchResult) {
-            if (searchResult.getResultsReturned() == ConnpassEventSearchQuery.MAX_COUNT) {
-              // TODO 次の検索
-              Timber.d("connpass query has next items");
-            }
-            return Observable.from(searchResult.getEvents());
-          }
-        })
-        .map(new Func1<ConnpassEvent, ConnpassIndexViewModel>() {
-          @Override public ConnpassIndexViewModel call(ConnpassEvent event) {
-            return new ConnpassIndexViewModel(event);
-          }
-        })
-        .filter(ConnpassIndexViewModel.filter(region))
-        .toList();
   }
 
   private Observable<List<ZusaarIndexViewModel>> searchZusaar(@Nullable final Region region,
