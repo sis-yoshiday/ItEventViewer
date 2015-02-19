@@ -16,10 +16,10 @@ import rx.functions.Func1;
  */
 public class ConnpassService {
 
-  private ConnpassApi connpassApi;
+  private ConnpassApi api;
 
-  public ConnpassService(ConnpassApi connpassApi) {
-    this.connpassApi = connpassApi;
+  public ConnpassService(ConnpassApi api) {
+    this.api = api;
   }
 
   public Observable<List<ConnpassIndexViewModel>> search(@Nullable final Region region,
@@ -45,7 +45,7 @@ public class ConnpassService {
         .count(count)
         .build();
 
-    return connpassApi.searchEvent(query)
+    return api.searchEvent(query)
         .flatMap(new Func1<ConnpassSearchResult, Observable<ConnpassEvent>>() {
           @Override public Observable<ConnpassEvent> call(ConnpassSearchResult result) {
             Observable<ConnpassEvent> next;

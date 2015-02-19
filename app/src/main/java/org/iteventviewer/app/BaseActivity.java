@@ -20,6 +20,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
+import rx.Observable;
+import rx.android.app.AppObservable;
 import rx.android.app.support.RxActionBarActivity;
 
 /**
@@ -52,5 +54,9 @@ public abstract class BaseActivity extends RxActionBarActivity {
         break;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  protected <T> Observable<T> bind(Observable<T> source) {
+    return AppObservable.bindActivity(this, source);
   }
 }

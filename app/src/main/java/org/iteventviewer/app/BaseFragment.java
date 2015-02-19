@@ -17,6 +17,8 @@
 package org.iteventviewer.app;
 
 import android.support.v7.widget.Toolbar;
+import rx.Observable;
+import rx.android.app.AppObservable;
 import rx.android.app.support.RxFragment;
 
 /**
@@ -26,5 +28,9 @@ public class BaseFragment extends RxFragment {
 
   public Toolbar getToolbar() {
     return ((ToolBarActivity) getActivity()).getToolbar();
+  }
+
+  protected <T> Observable<T> bind(Observable<T> source) {
+    return AppObservable.bindFragment(this, source);
   }
 }

@@ -16,10 +16,10 @@ import rx.functions.Func1;
  */
 public class AtndService {
 
-  private AtndApi atndApi;
+  private AtndApi api;
 
-  public AtndService(AtndApi atndApi) {
-    this.atndApi = atndApi;
+  public AtndService(AtndApi api) {
+    this.api = api;
   }
 
   public Observable<List<AtndIndexViewModel>> search(@Nullable final Region region,
@@ -46,7 +46,7 @@ public class AtndService {
         .count(count)
         .build();
 
-    return atndApi.searchEvent(query)
+    return api.searchEvent(query)
         .flatMap(
             new Func1<AtndSearchResult<AtndEvent>, Observable<AtndSearchResult.EventContainer<AtndEvent>>>() {
               @Override public Observable<AtndSearchResult.EventContainer<AtndEvent>> call(

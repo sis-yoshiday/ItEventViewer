@@ -21,9 +21,11 @@ import org.iteventviewer.service.atnd.AtndService;
 import org.iteventviewer.service.compass.ConnpassApi;
 import org.iteventviewer.service.compass.ConnpassService;
 import org.iteventviewer.service.doorkeeper.DoorkeeperApi;
+import org.iteventviewer.service.doorkeeper.DoorkeeperService;
 import org.iteventviewer.service.qiita.QiitaApi;
 import org.iteventviewer.service.zusaar.DoubleConverter;
 import org.iteventviewer.service.zusaar.ZusaarApi;
+import org.iteventviewer.service.zusaar.ZusaarService;
 import retrofit.RestAdapter;
 import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
@@ -72,7 +74,7 @@ import timber.log.Timber;
         .create(AtndApi.class);
   }
 
-  @Provides public AtndService provideAtndService(AtndApi atndApi) {
+  @Provides @Singleton public AtndService provideAtndService(AtndApi atndApi) {
     return new AtndService(atndApi);
   }
 
@@ -91,7 +93,7 @@ import timber.log.Timber;
         .create(ConnpassApi.class);
   }
 
-  @Provides public ConnpassService provideConnpassService(ConnpassApi connpassApi) {
+  @Provides @Singleton public ConnpassService provideConnpassService(ConnpassApi connpassApi) {
     return new ConnpassService(connpassApi);
   }
 
@@ -113,6 +115,10 @@ import timber.log.Timber;
         .create(ZusaarApi.class);
   }
 
+  @Provides @Singleton public ZusaarService provideZusaarService(ZusaarApi zusaarApi) {
+    return new ZusaarService(zusaarApi);
+  }
+
   @Provides @Singleton public DoorkeeperApi provideDoorkeeperApi(OkHttpClient httpClient) {
 
     LocalDateTimeConverter localDateTimeConverter =
@@ -126,6 +132,10 @@ import timber.log.Timber;
         .setConverter(new GsonConverter(gson))
         .build()
         .create(DoorkeeperApi.class);
+  }
+
+  @Provides @Singleton public DoorkeeperService provideDoorkeeperService(DoorkeeperApi doorkeeperApi) {
+    return new DoorkeeperService(doorkeeperApi);
   }
 
   @Provides @Singleton public QiitaApi provideQiitaApi(OkHttpClient httpClient) {

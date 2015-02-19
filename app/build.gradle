@@ -41,6 +41,19 @@ android {
     }
   }
 
+  productFlavors {
+
+    // NOTE production以外ではリリース用の署名は使わない
+    def debugSign = signingConfigs.debug
+
+    f_production {
+    }
+    f_development {
+      applicationId "org.iteventviewer.app.dev"
+      signingConfig debugSign
+    }
+  }
+
   packagingOptions {
     exclude 'META-INF/services/javax.annotation.processing.Processor'
   }

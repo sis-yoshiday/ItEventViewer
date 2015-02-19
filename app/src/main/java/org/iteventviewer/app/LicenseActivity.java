@@ -67,7 +67,7 @@ public class LicenseActivity extends ToolBarActivity {
 
     Observable<String> licenseTextStream = licenseTextStream(getAssets());
 
-    subscription = AppObservable.bindActivity(this, licenseTextStream)
+    subscription = bind(licenseTextStream)
         .subscribeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action1<String>() {
           @Override public void call(String s) {

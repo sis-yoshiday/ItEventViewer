@@ -102,7 +102,7 @@ public class AtndEventDetailActivity extends BaseEventDetailActivity {
 
     currentResultObservable = atndApi.searchEventMember(query);
 
-    subscription.add(AppObservable.bindActivity(this, currentResultObservable)
+    subscription.add(bind(currentResultObservable)
         .subscribeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action1<AtndSearchResult<AtndEventMember>>() {
           @Override public void call(AtndSearchResult<AtndEventMember> result) {

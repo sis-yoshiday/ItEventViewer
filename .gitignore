@@ -41,3 +41,6 @@ proguard/
  
 # Log Files
 *.log
+
+app/src/f_development/
+app/src/f_production/
