@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import lombok.Getter;
 import org.iteventviewer.app.R;
+import org.iteventviewer.model.BaseIndexViewModel;
 import org.iteventviewer.util.Region;
 import org.iteventviewer.model.IndexViewModel;
 import org.iteventviewer.service.compass.json.ConnpassEvent;
@@ -14,7 +15,7 @@ import rx.functions.Func1;
  * Created by yuki_yoshida on 15/02/09.
  */
 @Getter
-public class ConnpassIndexViewModel extends IndexViewModel {
+public class ConnpassIndexViewModel extends BaseIndexViewModel {
 
   private ConnpassEvent event;
 

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.Getter;
 import org.iteventviewer.app.R;
+import org.iteventviewer.model.BaseIndexViewModel;
 import org.iteventviewer.model.IndexViewModel;
 import org.iteventviewer.service.doorkeeper.json.DoorkeeperEvent;
 import org.iteventviewer.service.doorkeeper.json.DoorkeeperGroup;
@@ -15,7 +16,7 @@ import rx.functions.Func1;
 /**
  * Created by yuki_yoshida on 15/02/09.
  */
-@Getter public class DoorkeeperIndexViewModel extends IndexViewModel {
+@Getter public class DoorkeeperIndexViewModel extends BaseIndexViewModel {
 
   private DoorkeeperEvent event;
 

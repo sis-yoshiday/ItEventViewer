@@ -29,9 +29,11 @@ import org.iteventviewer.app.BaseFragment;
 import org.iteventviewer.app.ConnpassEventDetailActivity;
 import org.iteventviewer.app.MyApplication;
 import org.iteventviewer.app.R;
-import org.iteventviewer.common.BindableViewHolder;
 import org.iteventviewer.common.ClickableViewHolder;
+import org.iteventviewer.common.DividerItemDecoration;
 import org.iteventviewer.common.OnItemClickListener;
+import org.iteventviewer.common.SimpleRecyclerAdapter;
+import org.iteventviewer.model.BaseIndexViewModel;
 import org.iteventviewer.model.IndexViewModel;
 import org.iteventviewer.service.atnd.AtndService;
 import org.iteventviewer.service.atnd.model.AtndIndexViewModel;
@@ -45,8 +47,6 @@ import org.iteventviewer.util.PreferenceUtil;
 import org.iteventviewer.util.Region;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.functions.Func4;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
@@ -95,27 +95,26 @@ public class IndexFragment extends BaseFragment {
     adapter = new IndexAdapter(getActivity());
     recyclerView.setAdapter(adapter);
 
-    recyclerView.addItemDecoration(new Divider(getActivity()));
+    recyclerView.addItemDecoration(
+        new DividerItemDecoration(getResources().getDrawable(R.drawable.divider)));
 
-    adapter.setOnItemClickListener(new OnItemClickListener() {
-      @Override public void onItemClick(View itemView, int position) {
-        IndexViewModel item = adapter.getItem(position);
-        // NOTE : サービスが増えたら追加
-        switch (item.getTag()) {
-          case R.string.atnd:
-            AtndEventDetailActivity.launch(getActivity(), ((AtndIndexViewModel) item).getEvent());
-            break;
-          case R.string.connpass:
-            ConnpassEventDetailActivity.launch(getActivity(),
-                ((ConnpassIndexViewModel) item).getEvent());
-            break;
-          case R.string.zusaar:
-            // TODO
-            break;
-          case R.string.doorkeeper:
-            // TODO
-            break;
-        }
+    adapter.setOnItemClickListener((itemView, position) -> {
+      BaseIndexViewModel item = adapter.getItem(position);
+      // NOTE : サービスが増えたら追加
+      switch (item.getTag()) {
+        case R.string.atnd:
+          AtndEventDetailActivity.launch(getActivity(), ((AtndIndexViewModel) item).getEvent());
+          break;
+        case R.string.connpass:
+          ConnpassEventDetailActivity.launch(getActivity(),
+              ((ConnpassIndexViewModel) item).getEvent());
+          break;
+        case R.string.zusaar:
+          // TODO
+          break;
+        case R.string.doorkeeper:
+          // TODO
+          break;
       }
     });
 
@@ -156,71 +155,51 @@ public class IndexFragment extends BaseFragment {
     // 各サービスからの取得データのハンドリング
     subscription.add(bind(Observable.zip(atndResultStream, connpassResultStream, zusaarResultStream,
         doorkeeperResultStream,
-        new Func4<List<AtndIndexViewModel>, List<ConnpassIndexViewModel>, List<ZusaarIndexViewModel>, List<DoorkeeperIndexViewModel>, List<IndexViewModel>>() {
-          @Override public List<IndexViewModel> call(List<AtndIndexViewModel> atndModels,
+        new Func4<List<AtndIndexViewModel>, List<ConnpassIndexViewModel>, List<ZusaarIndexViewModel>, List<DoorkeeperIndexViewModel>, List<BaseIndexViewModel>>() {
+          @Override public List<BaseIndexViewModel> call(List<AtndIndexViewModel> atndModels,
               List<ConnpassIndexViewModel> connpassModels, List<ZusaarIndexViewModel> zusaarModels,
               List<DoorkeeperIndexViewModel> doorkeeperModels) {
             // 取得データをマージ
-            List<IndexViewModel> result = Lists.newArrayList();
+            List<BaseIndexViewModel> result = Lists.newArrayList();
             result.addAll(atndModels);
             result.addAll(connpassModels);
             result.addAll(zusaarModels);
             result.addAll(doorkeeperModels);
             return result;
           }
-        })).subscribeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Action1<List<IndexViewModel>>() {
-          @Override public void call(List<IndexViewModel> indexViewModels) {
-            // 日付でソート
-            adapter.setItems(indexViewModels);
-            adapter.sort(IndexViewModel.START_AT_ASC_COMPARATOR);
-            adapter.notifyDataSetChanged();
-          }
-        }, new Action1<Throwable>() {
-          @Override public void call(Throwable throwable) {
-            Timber.e(throwable, throwable.getMessage());
-            progressBar.setVisibility(View.GONE);
-          }
-        }, new Action0() {
-          @Override public void call() {
-            progressBar.setVisibility(View.GONE);
-          }
+        })).subscribeOn(AndroidSchedulers.mainThread()).subscribe(indexViewModels -> {
+          // 日付でソート
+          adapter.setItems(indexViewModels);
+          adapter.sort(IndexViewModel.START_AT_ASC_COMPARATOR);
+          adapter.notifyDataSetChanged();
+        }, throwable -> {
+          Timber.e(throwable, throwable.getMessage());
+          progressBar.setVisibility(View.GONE);
+        }, () -> {
+          progressBar.setVisibility(View.GONE);
         }));
   }
 
-  class IndexAdapter extends RecyclerView.Adapter<BindableViewHolder> {
-
-    private Context context;
-    private LayoutInflater inflater;
-    private List<? extends IndexViewModel> items;
+  class IndexAdapter extends SimpleRecyclerAdapter<BaseIndexViewModel, IndexAdapter.ViewHolder> {
 
     @Setter private OnItemClickListener onItemClickListener;
 
     public IndexAdapter(Context context) {
-      this.context = context;
-      this.inflater = LayoutInflater.from(context);
+      super(context);
       this.items = new ArrayList<>();
     }
 
-    @Override public BindableViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
       View view = inflater.inflate(R.layout.item_index, parent, false);
       return new ViewHolder(view, onItemClickListener);
     }
 
-    @Override public void onBindViewHolder(BindableViewHolder holder, int position) {
+    @Override public void onBindViewHolder(ViewHolder holder, int position) {
       holder.bind(position);
     }
 
     @Override public int getItemCount() {
       return items.size();
-    }
-
-    public IndexViewModel getItem(int position) {
-      return items.get(position);
-    }
-
-    public void setItems(List<? extends IndexViewModel> items) {
-      this.items = items;
     }
 
     public void sort(Comparator<IndexViewModel> comparator) {
@@ -240,48 +219,11 @@ public class IndexFragment extends BaseFragment {
 
       @Override public void bind(int position) {
 
-        IndexViewModel item = getItem(position);
+        BaseIndexViewModel item = getItem(position);
 
         title.setText(item.getTitle());
         tag.setText(item.getTag());
         date.setText(item.getStartedAt().toString("yyyy/MM/dd HH:mm"));
-      }
-    }
-  }
-
-  static class Divider extends RecyclerView.ItemDecoration {
-
-    private static final int[] ATTRS = new int[] {
-        android.R.attr.listDivider
-    };
-
-    private Drawable divider;
-
-    public Divider(Context context) {
-      final TypedArray a = context.obtainStyledAttributes(ATTRS);
-      divider = a.getDrawable(0);
-      a.recycle();
-    }
-
-    @Override public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
-        RecyclerView.State state) {
-      super.getItemOffsets(outRect, view, parent, state);
-    }
-
-    @Override public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-
-      final int left = parent.getPaddingLeft();
-      final int right = parent.getWidth() - parent.getPaddingRight();
-
-      final int childCount = parent.getChildCount();
-      for (int i = 0; i < childCount; i++) {
-        final View child = parent.getChildAt(i);
-        final RecyclerView.LayoutParams params =
-            (RecyclerView.LayoutParams) child.getLayoutParams();
-        final int top = child.getBottom() + params.bottomMargin;
-        final int bottom = top + divider.getIntrinsicHeight();
-        divider.setBounds(left, top, right, bottom);
-        divider.draw(c);
       }
     }
   }

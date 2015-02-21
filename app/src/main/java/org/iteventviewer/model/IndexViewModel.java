@@ -1,19 +1,12 @@
 package org.iteventviewer.model;
 
 import java.util.Comparator;
-import lombok.Getter;
 import org.joda.time.LocalDateTime;
 
 /**
  * Created by yuki_yoshida on 15/02/07.
  */
-@Getter public abstract class IndexViewModel {
-
-  private int tag;
-
-  public IndexViewModel(int tag) {
-    this.tag = tag;
-  }
+public interface IndexViewModel {
 
   public abstract String getTitle();
 

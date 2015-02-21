@@ -9,7 +9,6 @@ import org.iteventviewer.service.atnd.json.AtndSearchResult;
 import org.iteventviewer.service.atnd.model.AtndIndexViewModel;
 import org.iteventviewer.util.Region;
 import rx.Observable;
-import rx.functions.Func1;
 
 /**
  * Created by yuki_yoshida on 15/02/14.
@@ -25,13 +24,10 @@ public class AtndService {
   public Observable<List<AtndIndexViewModel>> search(@Nullable final Region region,
       final Set<String> categories) {
 
-    return searchRecursive(region, categories, 1).map(
-        new Func1<AtndSearchResult.EventContainer<AtndEvent>, AtndIndexViewModel>() {
-          @Override public AtndIndexViewModel call(
-              AtndSearchResult.EventContainer<AtndEvent> eventContainer) {
-            return new AtndIndexViewModel(eventContainer.getEvent());
-          }
-        }).filter(AtndIndexViewModel.filter(region)).toList();
+    return searchRecursive(region, categories, 1)
+        .map(eventContainer -> new AtndIndexViewModel(eventContainer.getEvent()))
+        .filter(AtndIndexViewModel.filter(region))
+        .toList();
   }
 
   private Observable<AtndSearchResult.EventContainer<AtndEvent>> searchRecursive(
@@ -46,19 +42,14 @@ public class AtndService {
         .count(count)
         .build();
 
-    return api.searchEvent(query)
-        .flatMap(
-            new Func1<AtndSearchResult<AtndEvent>, Observable<AtndSearchResult.EventContainer<AtndEvent>>>() {
-              @Override public Observable<AtndSearchResult.EventContainer<AtndEvent>> call(
-                  AtndSearchResult<AtndEvent> result) {
-                Observable<AtndSearchResult.EventContainer<AtndEvent>> next;
-                if (result.getResultsReturned() == count) {
-                  next = searchRecursive(region, categories, page + 1);
-                } else {
-                  next = Observable.empty();
-                }
-                return Observable.from(result.getEvents()).mergeWith(next);
-              }
-            });
+    return api.searchEvent(query).flatMap(result -> {
+      Observable<AtndSearchResult.EventContainer<AtndEvent>> next;
+      if (result.getResultsReturned() == count) {
+        next = searchRecursive(region, categories, page + 1);
+      } else {
+        next = Observable.empty();
+      }
+      return Observable.from(result.getEvents()).mergeWith(next);
+    });
   }
 }

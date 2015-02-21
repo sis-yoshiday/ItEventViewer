@@ -125,6 +125,9 @@
 # CompoundLayouts
 -dontwarn jp.yokomark.widget.compound.CompoundGridLayout
 
+# Retrolambda
+-dontwarn java.lang.invoke.*
+
 # Other
 -dontwarn java.beans.**
 -dontwarn org.apache.**

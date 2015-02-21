@@ -3,6 +3,7 @@ package org.iteventviewer.service.zusaar.model;
 import android.support.annotation.Nullable;
 import lombok.Getter;
 import org.iteventviewer.app.R;
+import org.iteventviewer.model.BaseIndexViewModel;
 import org.iteventviewer.model.IndexViewModel;
 import org.iteventviewer.service.compass.json.ConnpassEvent;
 import org.iteventviewer.service.zusaar.json.ZusaarEvent;
@@ -14,7 +15,7 @@ import rx.functions.Func1;
  * Created by yuki_yoshida on 15/02/09.
  */
 @Getter
-public class ZusaarIndexViewModel extends IndexViewModel {
+public class ZusaarIndexViewModel extends BaseIndexViewModel {
 
   private ZusaarEvent event;
 

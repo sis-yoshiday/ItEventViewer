@@ -3,6 +3,7 @@ package org.iteventviewer.service.atnd.model;
 import android.support.annotation.Nullable;
 import lombok.Getter;
 import org.iteventviewer.app.R;
+import org.iteventviewer.model.BaseIndexViewModel;
 import org.iteventviewer.util.Region;
 import org.iteventviewer.model.IndexViewModel;
 import org.iteventviewer.service.atnd.json.AtndEvent;
@@ -13,7 +14,7 @@ import rx.functions.Func1;
  * Created by yuki_yoshida on 15/02/09.
  */
 @Getter
-public class AtndIndexViewModel extends IndexViewModel {
+public class AtndIndexViewModel extends BaseIndexViewModel {
 
   private AtndEvent event;
 

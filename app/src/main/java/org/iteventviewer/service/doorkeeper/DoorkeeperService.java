@@ -8,6 +8,8 @@ import javax.inject.Inject;
 import org.iteventviewer.service.doorkeeper.json.DoorkeeperEventContainer;
 import org.iteventviewer.service.doorkeeper.model.DoorkeeperIndexViewModel;
 import org.iteventviewer.util.Region;
+import org.joda.time.DurationFieldType;
+import org.joda.time.LocalDateTime;
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -36,9 +38,14 @@ public class DoorkeeperService {
   private Observable<DoorkeeperEventContainer> searchRecuisive(@Nullable final Region region,
       final Set<String> categories, final int page) {
 
+    LocalDateTime today = new LocalDateTime();
+    LocalDateTime until = today.withFieldAdded(DurationFieldType.days(), 30);
+
     // 検索クエリを生成
     Map<String, String> query =
         new DoorkeeperEventSearchQuery.Builder().locale(DoorkeeperEventSearchQuery.LOCALE_JA)
+            .since(today)
+            .until(until)
             .sort(DoorkeeperEventSearchQuery.SORT_STARTS_AT)
             .page(page)
             .build();
